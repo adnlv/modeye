@@ -29,13 +29,21 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 glad_add_library(glad_gl_core_46 REPRODUCIBLE LOADER API "gl:core=4.6")
 
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.3
+)
+set(GLM_BUILD_TESTS OFF)
+FetchContent_MakeAvailable(glm)
+
 add_executable(modeye "src/Application.cpp")
 
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
 set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET modeye PROPERTY CXX_EXTENSIONS OFF)
 
-target_link_libraries(modeye PRIVATE glfw glad_gl_core_46)
+target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm)
 
 set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-g")
 set(MODEYE_UNIX_RELEASE_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-Werror" "-O3")
