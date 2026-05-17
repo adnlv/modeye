@@ -29,6 +29,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glad)
 glad_add_library(glad_gl_core_46 REPRODUCIBLE LOADER API "gl:core=4.6")
 
-add_executable(modeye modeye.cpp)
+add_executable(modeye "src/Application.cpp")
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
 target_link_libraries(modeye PRIVATE glfw glad_gl_core_46)
