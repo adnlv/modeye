@@ -43,10 +43,20 @@ int main(int argc, char** argv)
 		});
 
 	float vertices[]{
-		0.0f, 0.5f, 0.0f, // Top corner
+		-0.5f, 0.5f, 0.0f, // Top-left corner
+		0.5f, 0.5f, 0.0f, // Top-right corner
 		0.5f, -0.5f, 0.0f, // Bottom-right corner
 		-0.5f, -0.5f, 0.0f // Bottom-left corner
 	};
+	unsigned int indices[]{
+		0, 1, 3,
+		1, 2, 3
+	};
+
+	GLuint ebo;
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -125,7 +135,9 @@ int main(int argc, char** argv)
 
 		glUseProgram(program);
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwPollEvents();
 		glfwSwapBuffers(window);
