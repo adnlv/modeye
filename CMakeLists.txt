@@ -30,5 +30,30 @@ FetchContent_MakeAvailable(glad)
 glad_add_library(glad_gl_core_46 REPRODUCIBLE LOADER API "gl:core=4.6")
 
 add_executable(modeye "src/Application.cpp")
+
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
+set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET modeye PROPERTY CXX_EXTENSIONS OFF)
+
 target_link_libraries(modeye PRIVATE glfw glad_gl_core_46)
+
+set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-g")
+set(MODEYE_UNIX_RELEASE_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-Werror" "-O3")
+set(MODEYE_UNIX_COMPILE_OPTIONS 
+    "$<$<CONFIG:DEBUG>:$<JOIN:${MODEYE_UNIX_DEBUG_COMPILE_OPTIONS},;>>"
+    "$<$<CONFIG:RELEASE>:$<JOIN:${MODEYE_UNIX_RELEASE_COMPILE_OPTIONS},;>>"
+)
+
+set(MODEYE_MSVC_DEBUG_COMPILE_OPTIONS "/W4" "/Od")
+set(MODEYE_MSVC_RELEASE_COMPILE_OPTIONS "/W4" "/WX" "/O2")
+set(MODEYE_MSVC_COMPILE_OPTIONS 
+    "$<$<CONFIG:DEBUG>:$<JOIN:${MODEYE_MSVC_DEBUG_COMPILE_OPTIONS},;>>"
+    "$<$<CONFIG:RELEASE>:$<JOIN:${MODEYE_MSVC_RELEASE_COMPILE_OPTIONS},;>>"
+)
+
+set(MODEYE_COMPILE_OPTIONS 
+    "$<$<CXX_COMPILER_ID:MSVC>:${MODEYE_MSVC_COMPILE_OPTIONS}>"
+    "$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:CLANG>>:${MODEYE_MSVC_COMPILE_OPTIONS}>"
+)
+
+target_compile_options(modeye PRIVATE "${MODEYE_COMPILE_OPTIONS}")
