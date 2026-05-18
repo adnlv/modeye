@@ -17,7 +17,7 @@ public:
 
     void use() const;
     void setInt(const std::string& name, int value) const;
-    void setInt(const std::string& name, float value) const;
+    void setFloat(const std::string& name, float value) const;
 
 private:
     GLuint m_id;
@@ -122,7 +122,7 @@ void Shader::setInt(const std::string& name, int value) const
     glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
-void Shader::setInt(const std::string& name, float value) const
+void Shader::setFloat(const std::string& name, float value) const
 {
     glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
