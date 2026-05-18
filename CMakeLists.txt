@@ -65,3 +65,10 @@ set(MODEYE_COMPILE_OPTIONS
 )
 
 target_compile_options(modeye PRIVATE "${MODEYE_COMPILE_OPTIONS}")
+
+add_custom_target(copy_shaders ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/shaders" "$<TARGET_FILE_DIR:modeye>/shaders"
+    COMMENT "Copy shaders to the target directory"
+)
+
+add_dependencies(modeye copy_shaders)
