@@ -1,0 +1,5 @@
+root = true
+
+[*.{c++,cc,cpp,cppm,cxx,h,h++,hh,hpp,hxx,inl,ipp,ixx,tlh,tli,vert,frag,geom,tesc,tese,comp}]
+indent_size = 4
+indent_style = space
