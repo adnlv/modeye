@@ -13,23 +13,53 @@ class Shader
 {
 public:
     Shader(const std::string& vertShaderPath, const std::string& fragShaderPath);
-    Shader(const Shader& shader) = delete;
+    Shader(const Shader& other) = delete;
+    Shader& operator=(const Shader& other) = delete;
     ~Shader();
 
     void use() const;
     void setInt(const std::string& name, int value) const;
     void setFloat(const std::string& name, float value) const;
 
+    void reload();
+
 private:
-    GLuint m_id;
+    GLuint m_id = 0;
+    std::filesystem::path m_vertShaderFSPath;
+    std::filesystem::path m_fragShaderFSPath;
 };
 
 Shader::Shader(const std::string& vertShaderPath, const std::string& fragShaderPath)
 {
     std::filesystem::path dir("shaders");
-    std::filesystem::path vertShaderFSPath = dir / vertShaderPath;
-    std::filesystem::path fragShaderFSPath = dir / fragShaderPath;
+    m_vertShaderFSPath = dir / vertShaderPath;
+    m_fragShaderFSPath = dir / fragShaderPath;
 
+    reload();
+}
+
+Shader::~Shader()
+{
+    glDeleteProgram(m_id);
+}
+
+void Shader::use() const
+{
+    glUseProgram(m_id);
+}
+
+void Shader::setInt(const std::string& name, int value) const
+{
+    glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
+}
+
+void Shader::setFloat(const std::string& name, float value) const
+{
+    glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
+}
+
+inline void Shader::reload()
+{
     std::string vertShaderSrc;
     std::string fragShaderSrc;
 
@@ -41,8 +71,8 @@ Shader::Shader(const std::string& vertShaderPath, const std::string& fragShaderP
 
     try
     {
-        vertShaderFile.open(vertShaderFSPath);
-        fragShaderFile.open(fragShaderFSPath);
+        vertShaderFile.open(m_vertShaderFSPath);
+        fragShaderFile.open(m_fragShaderFSPath);
 
         std::stringstream vertShaderStream;
         std::stringstream fragShaderStream;
@@ -109,25 +139,10 @@ Shader::Shader(const std::string& vertShaderPath, const std::string& fragShaderP
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
+    if (m_id != 0)
+    {
+        glDeleteProgram(m_id);
+    }
+
     m_id = program;
-}
-
-Shader::~Shader()
-{
-    glDeleteProgram(m_id);
-}
-
-void Shader::use() const
-{
-    glUseProgram(m_id);
-}
-
-void Shader::setInt(const std::string& name, int value) const
-{
-    glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
-}
-
-void Shader::setFloat(const std::string& name, float value) const
-{
-    glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }

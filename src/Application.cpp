@@ -41,6 +41,10 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
+
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow* window, int width, int height)
         {
@@ -80,13 +84,22 @@ int main(int argc, char** argv)
     glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
 
     Shader shader("triangle.vert", "triangle.frag");
+    glfwSetWindowUserPointer(window, &shader);
 
     glfwSetKeyCallback(window,
         [](GLFWwindow* window, int key, int scancode, int action, int mods)
         {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+            if (action == GLFW_PRESS)
             {
-                glfwSetWindowShouldClose(window, true);
+                if (key == GLFW_KEY_ESCAPE)
+                {
+                    glfwSetWindowShouldClose(window, true);
+                }
+                else if (key == GLFW_KEY_R)
+                {
+                    Shader* shader = reinterpret_cast<Shader*>(glfwGetWindowUserPointer(window));
+                    shader->reload();
+                }
             }
         });
 
