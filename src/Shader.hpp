@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <glad/gl.h>
 #include <iostream>
@@ -25,34 +26,35 @@ private:
 
 Shader::Shader(const std::string& vertShaderPath, const std::string& fragShaderPath)
 {
-    std::string dir = "shaders";
-#ifdef WIN32
-    dir += '\\';
-#else
-    dir += '/';
-#endif
+    std::filesystem::path dir("shaders");
+    std::filesystem::path vertShaderFSPath = dir / vertShaderPath;
+    std::filesystem::path fragShaderFSPath = dir / fragShaderPath;
 
     std::string vertShaderSrc;
-    std::ifstream vertShaderFile;
-    vertShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
     std::string fragShaderSrc;
+
+    std::ifstream vertShaderFile;
     std::ifstream fragShaderFile;
+
+    vertShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fragShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
     try
     {
-        vertShaderFile.open(dir + vertShaderPath);
-        std::stringstream vertShaderStream;
-        vertShaderStream << vertShaderFile.rdbuf();
-        vertShaderSrc = vertShaderStream.str();
-        vertShaderFile.close();
+        vertShaderFile.open(vertShaderFSPath);
+        fragShaderFile.open(fragShaderFSPath);
 
-        fragShaderFile.open(dir + fragShaderPath);
+        std::stringstream vertShaderStream;
         std::stringstream fragShaderStream;
+
+        vertShaderStream << vertShaderFile.rdbuf();
         fragShaderStream << fragShaderFile.rdbuf();
-        fragShaderSrc = fragShaderStream.str();
+
+        vertShaderFile.close();
         fragShaderFile.close();
+
+        vertShaderSrc = vertShaderStream.str();
+        fragShaderSrc = fragShaderStream.str();
     }
     catch (const std::exception& e)
     {
