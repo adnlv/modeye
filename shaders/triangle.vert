@@ -4,10 +4,12 @@ layout (location = 0) in vec3 a_pos;
 
 uniform float u_time;
 
+out vec3 v_pos;
+
 void main()
 {
-	vec3 pos = a_pos;
-	pos.y += sin(u_time);
+    v_pos = a_pos;
+    v_pos.y += sin(u_time);
 
-	gl_Position = vec4(pos, 1.0);
+    gl_Position = vec4(v_pos, 1.0);
 }
