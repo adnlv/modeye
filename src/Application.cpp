@@ -47,23 +47,37 @@ int main(int argc, char** argv)
             glViewport(0, 0, width, height);
         });
 
-    float vertices[]{
+    float points[] = {
         0.0f, 0.5f, 0.0f, // Top corner
         0.5f, -0.5f, 0.0f, // Bottom-right corner
         -0.5f, -0.5f, 0.0f // Bottom-left corner
+    };
+
+    float colors[] = {
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f,
     };
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    GLuint points_vbo;
+    glGenBuffers(1, &points_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
+
+    GLuint colors_vbo;
+    glGenBuffers(1, &colors_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
 
     Shader shader("triangle.vert", "triangle.frag");
 
@@ -86,7 +100,7 @@ int main(int argc, char** argv)
         shader.use();
         shader.setFloat("u_time", static_cast<float>(time));
         glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwPollEvents();
