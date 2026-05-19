@@ -48,20 +48,10 @@ int main(int argc, char** argv)
         });
 
     float vertices[]{
-        -0.5f, 0.5f, 0.0f, // Top-left corner
-        0.5f, 0.5f, 0.0f, // Top-right corner
+        0.0f, 0.5f, 0.0f, // Top corner
         0.5f, -0.5f, 0.0f, // Bottom-right corner
         -0.5f, -0.5f, 0.0f // Bottom-left corner
     };
-    unsigned int indices[]{
-        0, 1, 3,
-        1, 2, 3
-    };
-
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -73,7 +63,7 @@ int main(int argc, char** argv)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), reinterpret_cast<void*>(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
 
     Shader shader("triangle.vert", "triangle.frag");
 
@@ -97,8 +87,7 @@ int main(int argc, char** argv)
         shader.setFloat("u_time", static_cast<float>(time));
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
