@@ -1,8 +1,13 @@
 #version 460 core
 
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec3 a_pos;
+
+uniform float u_time;
 
 void main()
 {
-	gl_Position = vec4(aPos, 1.0);
+	vec3 pos = a_pos;
+	pos.y += sin(u_time);
+
+	gl_Position = vec4(pos, 1.0);
 }
