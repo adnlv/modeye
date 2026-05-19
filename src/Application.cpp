@@ -38,6 +38,9 @@ int main(int argc, char** argv)
 
     assert(gladLoadGL(glfwGetProcAddress) != 0);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow* window, int width, int height)
         {
@@ -86,7 +89,7 @@ int main(int argc, char** argv)
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
         glBindVertexArray(vao);
