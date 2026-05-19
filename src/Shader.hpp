@@ -101,6 +101,9 @@ Shader::Shader(const std::string& vertShaderPath, const std::string& fragShaderP
         std::abort();
     }
 
+    glDetachShader(program, vertShader);
+    glDetachShader(program, fragShader);
+
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
