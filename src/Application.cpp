@@ -74,13 +74,17 @@ int main(int argc, char** argv)
 
     Shader shader("triangle.vert", "triangle.frag");
 
+    glfwSetKeyCallback(window,
+        [](GLFWwindow* window, int key, int scancode, int action, int mods)
+        {
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+            {
+                glfwSetWindowShouldClose(window, true);
+            }
+        });
+
     while (!glfwWindowShouldClose(window))
     {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        {
-            glfwSetWindowShouldClose(window, true);
-        }
-
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
