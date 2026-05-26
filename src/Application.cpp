@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <cassert>
 #include <iostream>
 
@@ -9,6 +12,33 @@
 
 #include "Shader.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+
+struct State
+{
+    const float cam_init_fov_deg = 45.0f;
+    const float cam_speed = 0.05f;
+    const float mouse_speed = 0.005f;
+
+    float cam_fov = 0;
+    glm::vec3 cam_pos = glm::vec3(0, 0, -10.0f);
+    glm::vec2 cam_angle_deg = glm::vec2(3.14f, 0);
+    glm::vec2 mouse_pos = glm::vec2(0, 0);
+    glm::vec2 mouse_wheel_offset = glm::vec2(0, 0);
+
+    bool first_mouse = true;
+    float last_x = 720.0f / 2.0f;
+    float last_y = 480.0f / 2.0f;
+
+    glm::vec3 direction = glm::vec3(0, 0, 0);
+    glm::vec3 right = glm::vec3(0, 0, 0);
+} state;
+
+void update_camera_angles(int window_width, int window_height)
+{
+    state.cam_fov = state.cam_init_fov_deg - 5 * state.mouse_wheel_offset.y;
+    state.cam_angle_deg.x += state.mouse_speed * 0.32f * float(window_width / 2.f - state.mouse_pos.x);
+    state.cam_angle_deg.y += state.mouse_speed * 0.32f * float(window_height / 2.f - state.mouse_pos.y);
+}
 
 int main(int argc, char** argv)
 {
@@ -40,6 +70,8 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    //glEnable(GL_CULL_FACE);
 
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow* window, int width, int height)
@@ -97,6 +129,58 @@ int main(int argc, char** argv)
                     shader->reload();
                 }
             }
+
+            if (key == GLFW_KEY_W)
+            {
+                state.cam_pos += state.direction * state.cam_speed;
+                std::cout << "FORWARD\n";
+            }
+            if (key == GLFW_KEY_S)
+            {
+                state.cam_pos -= state.direction * state.cam_speed;
+                std::cout << "BACKWARD\n";
+            }
+            if (key == GLFW_KEY_A)
+            {
+                state.cam_pos -= state.right * state.cam_speed;
+                std::cout << "RIGHT\n";
+            }
+            if (key == GLFW_KEY_D)
+            {
+                state.cam_pos += state.right * state.cam_speed;
+                std::cout << "LEFT\n";
+            }
+        });
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window,
+        [](GLFWwindow* window, double xposIn, double yposIn)
+        {
+            float xpos = static_cast<float>(xposIn);
+            float ypos = static_cast<float>(yposIn);
+
+            if (state.first_mouse) {
+                state.last_x = xpos;
+                state.last_y = ypos;
+                state.first_mouse = false;
+            }
+
+            // Reversed since coordinates go from bottom to top
+            float xoffset = state.last_x - xpos;
+            float yoffset = state.last_y - ypos;
+
+            state.last_x = xpos;
+            state.last_y = ypos;
+
+            state.cam_angle_deg.x += xoffset * state.mouse_speed;
+            state.cam_angle_deg.y += yoffset * state.mouse_speed;
+        });
+    glfwSetScrollCallback(window,
+        [](GLFWwindow* window, double xoffset, double yoffset)
+        {
+            state.cam_fov -= static_cast<float>(yoffset) * 2.0f;
+            if (state.cam_fov < 1.0f)  state.cam_fov = 1.0f;
+            if (state.cam_fov > 45.0f) state.cam_fov = 45.0f;
         });
 
     double time = 0;
@@ -107,8 +191,25 @@ int main(int argc, char** argv)
 
         time = glfwGetTime();
 
-        glm::mat4 projection = glm::perspective(glm::radians(45.f), 720.f / 480.f, 0.1f, 100.f);
-        glm::mat4 view = glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        int fb_width, fb_height;
+        glfwGetFramebufferSize(window, &fb_width, &fb_height);
+
+        state.direction = glm::vec3(
+            cos(state.cam_angle_deg.y) * sin(state.cam_angle_deg.x),
+            sin(state.cam_angle_deg.y),
+            cos(state.cam_angle_deg.y) * cos(state.cam_angle_deg.x)
+        );
+
+        state.right = glm::vec3(
+            sin(state.cam_angle_deg.x - M_PI / 2.f),
+            0,
+            cos(state.cam_angle_deg.x - M_PI / 2.f)
+        );
+
+        glm::vec3 up = glm::cross(state.right, state.direction);
+
+        glm::mat4 projection = glm::perspective(glm::radians(state.cam_fov), 3.f / 4.f, 0.1f, 100.f);
+        glm::mat4 view = glm::lookAt(state.cam_pos, state.cam_pos + state.direction, up);
         glm::mat4 model = glm::mat4(1.0f);
 
         glm::mat4 mvp = projection * view * model;
