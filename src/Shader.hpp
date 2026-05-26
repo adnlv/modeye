@@ -17,6 +17,7 @@ public:
     Shader& operator=(const Shader& other) = delete;
     ~Shader();
 
+    GLuint id() const;
     void use() const;
     void setInt(const std::string& name, int value) const;
     void setFloat(const std::string& name, float value) const;
@@ -41,6 +42,11 @@ Shader::Shader(const std::string& vertShaderPath, const std::string& fragShaderP
 Shader::~Shader()
 {
     glDeleteProgram(m_id);
+}
+
+inline GLuint Shader::id() const
+{
+    return m_id;
 }
 
 void Shader::use() const

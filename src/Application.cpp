@@ -1,5 +1,4 @@
 #include <cassert>
-#include <cstdlib>
 #include <iostream>
 
 #define GLAD_GL_IMPLEMENTATION
@@ -9,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Shader.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 
 int main(int argc, char** argv)
 {
@@ -40,10 +40,6 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
 
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow* window, int width, int height)
@@ -103,15 +99,26 @@ int main(int argc, char** argv)
             }
         });
 
+    double time = 0;
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        double time = glfwGetTime();
+        time = glfwGetTime();
+
+        glm::mat4 projection = glm::perspective(glm::radians(45.f), 720.f / 480.f, 0.1f, 100.f);
+        glm::mat4 view = glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        glm::mat4 model = glm::mat4(1.0f);
+
+        glm::mat4 mvp = projection * view * model;
 
         shader.use();
         shader.setFloat("u_time", static_cast<float>(time));
+
+        GLuint matrixId = glGetUniformLocation(shader.id(), "u_mvp");
+        glUniformMatrix4fv(matrixId, 1, false, &mvp[0][0]);
+
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
         glDrawArrays(GL_TRIANGLES, 0, 3);
