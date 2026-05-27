@@ -147,12 +147,12 @@ int main(int argc, char** argv)
             if (key == GLFW_KEY_A)
             {
                 state.cam_pos -= state.right * state.cam_speed * dt;
-                std::cout << "RIGHT\n";
+                std::cout << "LEFT\n";
             }
             if (key == GLFW_KEY_D)
             {
                 state.cam_pos += state.right * state.cam_speed * dt;
-                std::cout << "LEFT\n";
+                std::cout << "RIGHT\n";
             }
         });
 
