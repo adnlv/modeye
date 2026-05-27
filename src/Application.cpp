@@ -10,13 +10,16 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include "Timer.hpp"
 #include "Shader.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 struct State
 {
+    Timer* timer;
+
     const float cam_init_fov_deg = 45.0f;
-    const float cam_speed = 0.05f;
+    const float cam_speed = 0.15f;
     const float mouse_speed = 0.005f;
 
     float cam_fov = 0;
@@ -36,8 +39,8 @@ struct State
 void update_camera_angles(int window_width, int window_height)
 {
     state.cam_fov = state.cam_init_fov_deg - 5 * state.mouse_wheel_offset.y;
-    state.cam_angle_deg.x += state.mouse_speed * 0.32f * float(window_width / 2.f - state.mouse_pos.x);
-    state.cam_angle_deg.y += state.mouse_speed * 0.32f * float(window_height / 2.f - state.mouse_pos.y);
+    state.cam_angle_deg.x += state.mouse_speed * static_cast<float>(state.timer->deltaTime()) * static_cast<float>(window_width / 2.f - state.mouse_pos.x);
+    state.cam_angle_deg.y += state.mouse_speed * static_cast<float>(state.timer->deltaTime()) * static_cast<float>(window_height / 2.f - state.mouse_pos.y);
 }
 
 int main(int argc, char** argv)
@@ -183,13 +186,14 @@ int main(int argc, char** argv)
             if (state.cam_fov > 45.0f) state.cam_fov = 45.0f;
         });
 
-    double time = 0;
+    Timer timer(60);
+    state.timer = &timer;
     while (!glfwWindowShouldClose(window))
     {
+        timer.startFrame();
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        time = glfwGetTime();
 
         int fb_width, fb_height;
         glfwGetFramebufferSize(window, &fb_width, &fb_height);
@@ -215,7 +219,6 @@ int main(int argc, char** argv)
         glm::mat4 mvp = projection * view * model;
 
         shader.use();
-        shader.setFloat("u_time", static_cast<float>(time));
 
         GLuint matrixId = glGetUniformLocation(shader.id(), "u_mvp");
         glUniformMatrix4fv(matrixId, 1, false, &mvp[0][0]);
@@ -226,6 +229,8 @@ int main(int argc, char** argv)
 
         glfwPollEvents();
         glfwSwapBuffers(window);
+
+        timer.endFrame();
     }
 
     glfwTerminate();
