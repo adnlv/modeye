@@ -58,17 +58,13 @@ public:
 
         if (m_targetFrameTime > 0 && frameTime < m_targetFrameTime)
         {
-            const auto sleepDuration = std::chrono::duration<double>(m_targetFrameTime - frameTime);
-
-            std::this_thread::sleep_for(sleepDuration);
-
-            // Recalculate delta time including the sleep period
-            m_deltaTime = glfwGetTime() - m_frameStart;
+            // Busy-wait for the remaining precise milliseconds
+            while (glfwGetTime() - m_frameStart < m_targetFrameTime)
+            {
+            }
         }
-        else
-        {
-            m_deltaTime = frameTime;
-        }
+
+        m_deltaTime = glfwGetTime() - m_frameStart;
 
         m_frameCount++;
         m_fpsTimer += m_deltaTime;
@@ -77,7 +73,7 @@ public:
         {
             m_currentFPS = m_frameCount;
             m_frameCount = 0;
-            m_fpsTimer -= 1;
+            m_fpsTimer = 0;
 
             std::cout << "FPS: " << m_currentFPS << std::endl;
         }

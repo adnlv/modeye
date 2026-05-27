@@ -18,9 +18,9 @@ struct State
 {
     Timer* timer;
 
-    const float cam_init_fov_deg = 45.0f;
-    const float cam_speed = 0.15f;
-    const float mouse_speed = 0.005f;
+    const float cam_init_fov_deg = 0.0f;
+    const float cam_speed = 5.0f;
+    const float mouse_speed = 0.05f;
 
     float cam_fov = 0;
     glm::vec3 cam_pos = glm::vec3(0, 0, -10.0f);
@@ -68,6 +68,7 @@ int main(int argc, char** argv)
     assert(window != nullptr);
 
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
 
     assert(gladLoadGL(glfwGetProcAddress) != 0);
 
@@ -120,6 +121,8 @@ int main(int argc, char** argv)
     glfwSetKeyCallback(window,
         [](GLFWwindow* window, int key, int scancode, int action, int mods)
         {
+            const float dt = static_cast<float>(state.timer->deltaTime());
+
             if (action == GLFW_PRESS)
             {
                 if (key == GLFW_KEY_ESCAPE)
@@ -135,22 +138,22 @@ int main(int argc, char** argv)
 
             if (key == GLFW_KEY_W)
             {
-                state.cam_pos += state.direction * state.cam_speed;
+                state.cam_pos += state.direction * state.cam_speed * dt;
                 std::cout << "FORWARD\n";
             }
             if (key == GLFW_KEY_S)
             {
-                state.cam_pos -= state.direction * state.cam_speed;
+                state.cam_pos -= state.direction * state.cam_speed * dt;
                 std::cout << "BACKWARD\n";
             }
             if (key == GLFW_KEY_A)
             {
-                state.cam_pos -= state.right * state.cam_speed;
+                state.cam_pos -= state.right * state.cam_speed * dt;
                 std::cout << "RIGHT\n";
             }
             if (key == GLFW_KEY_D)
             {
-                state.cam_pos += state.right * state.cam_speed;
+                state.cam_pos += state.right * state.cam_speed * dt;
                 std::cout << "LEFT\n";
             }
         });
@@ -175,8 +178,9 @@ int main(int argc, char** argv)
             state.last_x = xpos;
             state.last_y = ypos;
 
-            state.cam_angle_deg.x += xoffset * state.mouse_speed;
-            state.cam_angle_deg.y += yoffset * state.mouse_speed;
+            const float dt = static_cast<float>(state.timer->deltaTime());
+            state.cam_angle_deg.x += xoffset * state.mouse_speed * dt;
+            state.cam_angle_deg.y += yoffset * state.mouse_speed * dt;
         });
     glfwSetScrollCallback(window,
         [](GLFWwindow* window, double xoffset, double yoffset)
@@ -186,7 +190,7 @@ int main(int argc, char** argv)
             if (state.cam_fov > 45.0f) state.cam_fov = 45.0f;
         });
 
-    Timer timer(60);
+    Timer timer;
     state.timer = &timer;
     while (!glfwWindowShouldClose(window))
     {
