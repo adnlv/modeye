@@ -10,13 +10,13 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "Timer.hpp"
 #include "Shader.hpp"
+#include "Timer.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 struct State
 {
-    Timer* timer;
+    Timer* timer = nullptr;
 
     const float cam_init_fov_deg = 0.0f;
     const float cam_speed = 5.0f;
