@@ -75,8 +75,6 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    //glEnable(GL_CULL_FACE);
-
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow* window, int width, int height)
         {
