@@ -13,17 +13,17 @@
 #include "Shader.hpp"
 #include "Timer.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 struct State
 {
     Timer* timer = nullptr;
 
-    const float cam_init_fov_deg = 0.0f;
-    const float cam_speed = 5.0f;
+    const float cam_speed = 1.0f;
     const float mouse_speed = 0.05f;
 
-    float cam_fov = 0;
-    glm::vec3 cam_pos = glm::vec3(0, 0, -10.0f);
+    float cam_fov = 45.0f;
+    glm::vec3 cam_pos = glm::vec3(0, 0, 3.0f);
     glm::vec2 cam_angle_deg = glm::vec2(3.14f, 0);
     glm::vec2 mouse_pos = glm::vec2(0, 0);
     glm::vec2 mouse_wheel_offset = glm::vec2(0, 0);
@@ -35,13 +35,6 @@ struct State
     glm::vec3 direction = glm::vec3(0, 0, 0);
     glm::vec3 right = glm::vec3(0, 0, 0);
 } state;
-
-void update_camera_angles(int window_width, int window_height)
-{
-    state.cam_fov = state.cam_init_fov_deg - 5 * state.mouse_wheel_offset.y;
-    state.cam_angle_deg.x += state.mouse_speed * static_cast<float>(state.timer->deltaTime()) * static_cast<float>(window_width / 2.f - state.mouse_pos.x);
-    state.cam_angle_deg.y += state.mouse_speed * static_cast<float>(state.timer->deltaTime()) * static_cast<float>(window_height / 2.f - state.mouse_pos.y);
-}
 
 int main(int argc, char** argv)
 {
@@ -133,27 +126,6 @@ int main(int argc, char** argv)
                     shader->reload();
                 }
             }
-
-            if (key == GLFW_KEY_W)
-            {
-                state.cam_pos += state.direction * state.cam_speed * dt;
-                std::cout << "FORWARD\n";
-            }
-            if (key == GLFW_KEY_S)
-            {
-                state.cam_pos -= state.direction * state.cam_speed * dt;
-                std::cout << "BACKWARD\n";
-            }
-            if (key == GLFW_KEY_A)
-            {
-                state.cam_pos -= state.right * state.cam_speed * dt;
-                std::cout << "LEFT\n";
-            }
-            if (key == GLFW_KEY_D)
-            {
-                state.cam_pos += state.right * state.cam_speed * dt;
-                std::cout << "RIGHT\n";
-            }
         });
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -184,8 +156,9 @@ int main(int argc, char** argv)
         [](GLFWwindow* window, double xoffset, double yoffset)
         {
             state.cam_fov -= static_cast<float>(yoffset) * 2.0f;
-            if (state.cam_fov < 1.0f)  state.cam_fov = 1.0f;
+            if (state.cam_fov < 1.0f) state.cam_fov = 1.0f;
             if (state.cam_fov > 45.0f) state.cam_fov = 45.0f;
+            std::cout << "FOV: " << state.cam_fov << std::endl;
         });
 
     Timer timer;
@@ -193,6 +166,30 @@ int main(int argc, char** argv)
     while (!glfwWindowShouldClose(window))
     {
         timer.startFrame();
+
+        glfwPollEvents();
+
+        const float dt = static_cast<float>(state.timer->deltaTime());
+        if (glfwGetKey(window, GLFW_KEY_W))
+        {
+            state.cam_pos += state.direction * state.cam_speed * dt;
+            std::cout << "FORWARD\n";
+        }
+        if (glfwGetKey(window, GLFW_KEY_S))
+        {
+            state.cam_pos -= state.direction * state.cam_speed * dt;
+            std::cout << "BACKWARD\n";
+        }
+        if (glfwGetKey(window, GLFW_KEY_A))
+        {
+            state.cam_pos -= state.right * state.cam_speed * dt;
+            std::cout << "LEFT\n";
+        }
+        if (glfwGetKey(window, GLFW_KEY_D))
+        {
+            state.cam_pos += state.right * state.cam_speed * dt;
+            std::cout << "RIGHT\n";
+        }
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -223,7 +220,7 @@ int main(int argc, char** argv)
         shader.use();
 
         GLuint matrixId = glGetUniformLocation(shader.id(), "u_mvp");
-        glUniformMatrix4fv(matrixId, 1, false, &mvp[0][0]);
+        glUniformMatrix4fv(matrixId, 1, false, glm::value_ptr(mvp));
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
