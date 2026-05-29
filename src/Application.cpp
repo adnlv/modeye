@@ -222,12 +222,14 @@ int main(int argc, char** argv)
         glm::mat4 view = glm::lookAt(state.cam_pos, state.cam_pos + state.direction, up);
         glm::mat4 model = glm::mat4(1.0f);
 
-        glm::mat4 mvp = projection * view * model;
-
         shader.use();
 
-        GLuint matrixId = glGetUniformLocation(shader.id(), "u_mvp");
-        glUniformMatrix4fv(matrixId, 1, false, glm::value_ptr(mvp));
+        GLuint projectionLocation = glGetUniformLocation(shader.id(), "u_projection");
+        GLuint modelLocation = glGetUniformLocation(shader.id(), "u_model");
+        GLuint viewLocation = glGetUniformLocation(shader.id(), "u_view");
+        glUniformMatrix4fv(projectionLocation, 1, false, glm::value_ptr(projection));
+        glUniformMatrix4fv(modelLocation, 1, false, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLocation, 1, false, glm::value_ptr(view));
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
