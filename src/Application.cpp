@@ -211,11 +211,11 @@ int main(int argc, char** argv)
         if (glfwGetKey(window, GLFW_KEY_SPACE))
         {
             state.cam_pos += up * state.cam_speed * dt;
-            std::cout << "RIGHT\n";
+            std::cout << "UP\n";
         } else if (glfwGetKey(window, GLFW_KEY_C))
         {
             state.cam_pos -= up * state.cam_speed * dt;
-            std::cout << "RIGHT\n";
+            std::cout << "DOWN\n";
         }
         
         glm::mat4 projection = glm::perspective(glm::radians(state.cam_fov), 3.f / 4.f, 0.1f, 100.f);
