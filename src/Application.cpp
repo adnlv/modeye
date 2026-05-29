@@ -169,28 +169,6 @@ int main(int argc, char** argv)
 
         glfwPollEvents();
 
-        const float dt = static_cast<float>(state.timer->deltaTime());
-        if (glfwGetKey(window, GLFW_KEY_W))
-        {
-            state.cam_pos += state.direction * state.cam_speed * dt;
-            std::cout << "FORWARD\n";
-        }
-        if (glfwGetKey(window, GLFW_KEY_S))
-        {
-            state.cam_pos -= state.direction * state.cam_speed * dt;
-            std::cout << "BACKWARD\n";
-        }
-        if (glfwGetKey(window, GLFW_KEY_A))
-        {
-            state.cam_pos -= state.right * state.cam_speed * dt;
-            std::cout << "LEFT\n";
-        }
-        if (glfwGetKey(window, GLFW_KEY_D))
-        {
-            state.cam_pos += state.right * state.cam_speed * dt;
-            std::cout << "RIGHT\n";
-        }
-
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -211,6 +189,35 @@ int main(int argc, char** argv)
 
         glm::vec3 up = glm::cross(state.right, state.direction);
 
+        const float dt = static_cast<float>(state.timer->deltaTime());
+        if (glfwGetKey(window, GLFW_KEY_W))
+        {
+            state.cam_pos += state.direction * state.cam_speed * dt;
+            std::cout << "FORWARD\n";
+        } else if (glfwGetKey(window, GLFW_KEY_S))
+        {
+            state.cam_pos -= state.direction * state.cam_speed * dt;
+            std::cout << "BACKWARD\n";
+        }
+        if (glfwGetKey(window, GLFW_KEY_A))
+        {
+            state.cam_pos -= state.right * state.cam_speed * dt;
+            std::cout << "LEFT\n";
+        } else if (glfwGetKey(window, GLFW_KEY_D))
+        {
+            state.cam_pos += state.right * state.cam_speed * dt;
+            std::cout << "RIGHT\n";
+        }
+        if (glfwGetKey(window, GLFW_KEY_SPACE))
+        {
+            state.cam_pos += up * state.cam_speed * dt;
+            std::cout << "RIGHT\n";
+        } else if (glfwGetKey(window, GLFW_KEY_C))
+        {
+            state.cam_pos -= up * state.cam_speed * dt;
+            std::cout << "RIGHT\n";
+        }
+        
         glm::mat4 projection = glm::perspective(glm::radians(state.cam_fov), 3.f / 4.f, 0.1f, 100.f);
         glm::mat4 view = glm::lookAt(state.cam_pos, state.cam_pos + state.direction, up);
         glm::mat4 model = glm::mat4(1.0f);
