@@ -19,7 +19,7 @@ struct State
 {
     Timer* timer = nullptr;
 
-    const float cam_speed = 1.0f;
+    const float cam_speed = 3.0f;
     const float mouse_speed = 0.05f;
 
     float cam_fov = 45.0f;
@@ -34,6 +34,9 @@ struct State
 
     glm::vec3 direction = glm::vec3(0, 0, 0);
     glm::vec3 right = glm::vec3(0, 0, 0);
+
+    int window_width = 720;
+    int window_height = 480;
 } state;
 
 void loadOBJ(
@@ -145,7 +148,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 8);
 
-    GLFWwindow* window = glfwCreateWindow(720, 480, "ModEye", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(state.window_width, state.window_height, "ModEye", nullptr, nullptr);
     assert(window != nullptr);
 
     glfwMakeContextCurrent(window);
@@ -160,12 +163,14 @@ int main(int argc, char** argv)
         [](GLFWwindow* window, int width, int height)
         {
             glViewport(0, 0, width, height);
+            state.window_width = width;
+            state.window_height = height;
         });
 
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
-    loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
+    loadOBJ("assets\\dragon.obj", vertices, uvs, normals);
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -302,7 +307,10 @@ int main(int argc, char** argv)
             std::cout << "DOWN\n";
         }
 
-        glm::mat4 projection = glm::perspective(glm::radians(state.cam_fov), 3.f / 4.f, 0.1f, 100.f);
+        glm::mat4 projection = glm::perspective(
+            glm::radians(state.cam_fov), 
+            static_cast<float>(state.window_width) / static_cast<float>(state.window_height), 
+            0.1f, 100.f);
         glm::mat4 view = glm::lookAt(state.cam_pos, state.cam_pos + state.direction, up);
         glm::mat4 model = glm::mat4(1.0f);
 
