@@ -36,6 +36,94 @@ struct State
     glm::vec3 right = glm::vec3(0, 0, 0);
 } state;
 
+void loadOBJ(
+    const std::string& path,
+    std::vector<glm::vec3>& out_vertices,
+    std::vector<glm::vec2>& out_uvs,
+    std::vector<glm::vec3>& out_normals)
+{
+    std::vector<GLuint> vertex_idxs, uv_idxs, normal_idxs;
+    std::vector<glm::vec3> temp_vertices, temp_normals;
+    std::vector<glm::vec2> temp_uvs;
+
+    FILE* file = fopen(path.c_str(), "r");
+    assert(file != nullptr);
+
+    while (true)
+    {
+        char header[128];
+        int res = fscanf(file, "%s", header);
+        if (res == EOF)
+        {
+            break;
+        }
+
+        if (strcmp(header, "v") == 0)
+        {
+            glm::vec3 v{};
+            (void)fscanf(file, "%f %f %f\n", &v.x, &v.y, &v.z);
+            temp_vertices.push_back(v);
+        }
+        else if (strcmp(header, "vt") == 0)
+        {
+            glm::vec2 uv{};
+            (void)fscanf(file, "%f %f\n", &uv.x, &uv.y);
+            temp_uvs.push_back(uv);
+        }
+        else if (strcmp(header, "vn") == 0)
+        {
+            glm::vec3 n{};
+            (void)fscanf(file, "%f %f %f\n", &n.x, &n.y, &n.z);
+            temp_normals.push_back(n);
+        }
+        else if (strcmp(header, "f") == 0)
+        {
+            std::string v1, v2, v3;
+            unsigned int v_idx[3], uv_idx[3], n_idx[3];
+
+            int matches = fscanf(
+                file, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
+                &v_idx[0], &uv_idx[0], &n_idx[0],
+                &v_idx[1], &uv_idx[1], &n_idx[1],
+                &v_idx[2], &uv_idx[2], &n_idx[2]);
+            assert(matches == 9);
+
+            vertex_idxs.push_back(v_idx[0]);
+            vertex_idxs.push_back(v_idx[1]);
+            vertex_idxs.push_back(v_idx[2]);
+
+            uv_idxs.push_back(uv_idx[0]);
+            uv_idxs.push_back(uv_idx[1]);
+            uv_idxs.push_back(uv_idx[2]);
+
+            normal_idxs.push_back(n_idx[0]);
+            normal_idxs.push_back(n_idx[1]);
+            normal_idxs.push_back(n_idx[2]);
+        }
+    }
+
+    for (size_t i = 0; i < vertex_idxs.size(); ++i)
+    {
+        GLuint v_idx = vertex_idxs[i];
+        glm::vec3 v = temp_vertices[v_idx - 1];
+        out_vertices.push_back(v);
+    }
+
+    for (size_t i = 0; i < uv_idxs.size(); ++i)
+    {
+        GLuint uv_idx = uv_idxs[i];
+        glm::vec2 uv = temp_uvs[uv_idx - 1];
+        out_uvs.push_back(uv);
+    }
+    
+    for (size_t i = 0; i < normal_idxs.size(); ++i)
+    {
+        GLuint n_idx = normal_idxs[i];
+        glm::vec3 n = temp_normals[n_idx - 1];
+        out_normals.push_back(n);
+    }
+}
+
 int main(int argc, char** argv)
 {
     glfwSetErrorCallback(
@@ -74,17 +162,10 @@ int main(int argc, char** argv)
             glViewport(0, 0, width, height);
         });
 
-    float points[] = {
-        0.0f, 0.5f, 0.0f, // Top corner
-        0.5f, -0.5f, 0.0f, // Bottom-right corner
-        -0.5f, -0.5f, 0.0f // Bottom-left corner
-    };
-
-    float colors[] = {
-        1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 1.0f,
-    };
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
+    loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -93,7 +174,7 @@ int main(int argc, char** argv)
     GLuint points_vbo;
     glGenBuffers(1, &points_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
@@ -101,7 +182,7 @@ int main(int argc, char** argv)
     GLuint colors_vbo;
     glGenBuffers(1, &colors_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
@@ -194,7 +275,8 @@ int main(int argc, char** argv)
         {
             state.cam_pos += state.direction * state.cam_speed * dt;
             std::cout << "FORWARD\n";
-        } else if (glfwGetKey(window, GLFW_KEY_S))
+        }
+        else if (glfwGetKey(window, GLFW_KEY_S))
         {
             state.cam_pos -= state.direction * state.cam_speed * dt;
             std::cout << "BACKWARD\n";
@@ -203,7 +285,8 @@ int main(int argc, char** argv)
         {
             state.cam_pos -= state.right * state.cam_speed * dt;
             std::cout << "LEFT\n";
-        } else if (glfwGetKey(window, GLFW_KEY_D))
+        }
+        else if (glfwGetKey(window, GLFW_KEY_D))
         {
             state.cam_pos += state.right * state.cam_speed * dt;
             std::cout << "RIGHT\n";
@@ -212,12 +295,13 @@ int main(int argc, char** argv)
         {
             state.cam_pos += up * state.cam_speed * dt;
             std::cout << "UP\n";
-        } else if (glfwGetKey(window, GLFW_KEY_C))
+        }
+        else if (glfwGetKey(window, GLFW_KEY_C))
         {
             state.cam_pos -= up * state.cam_speed * dt;
             std::cout << "DOWN\n";
         }
-        
+
         glm::mat4 projection = glm::perspective(glm::radians(state.cam_fov), 3.f / 4.f, 0.1f, 100.f);
         glm::mat4 view = glm::lookAt(state.cam_pos, state.cam_pos + state.direction, up);
         glm::mat4 model = glm::mat4(1.0f);
@@ -233,7 +317,7 @@ int main(int argc, char** argv)
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
         glfwPollEvents();
         glfwSwapBuffers(window);
