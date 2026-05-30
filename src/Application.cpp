@@ -19,7 +19,7 @@ struct State
 {
     Timer* timer = nullptr;
 
-    const float cam_speed = 3.0f;
+    const float cam_speed = 5.0f;
     const float mouse_speed = 0.05f;
 
     float cam_fov = 45.0f;
@@ -37,6 +37,7 @@ struct State
 
     int window_width = 720;
     int window_height = 480;
+    float screen_aspect_ratio = 1;
 } state;
 
 void loadOBJ(
@@ -165,6 +166,7 @@ int main(int argc, char** argv)
             glViewport(0, 0, width, height);
             state.window_width = width;
             state.window_height = height;
+            state.screen_aspect_ratio = static_cast<float>(state.window_width) / static_cast<float>(state.window_height);
         });
 
     std::vector<glm::vec3> vertices;
@@ -309,7 +311,7 @@ int main(int argc, char** argv)
 
         glm::mat4 projection = glm::perspective(
             glm::radians(state.cam_fov), 
-            static_cast<float>(state.window_width) / static_cast<float>(state.window_height), 
+            state.screen_aspect_ratio, 
             0.1f, 100.f);
         glm::mat4 view = glm::lookAt(state.cam_pos, state.cam_pos + state.direction, up);
         glm::mat4 model = glm::mat4(1.0f);
