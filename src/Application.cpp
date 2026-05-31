@@ -11,7 +11,6 @@
 #include "Mesh.hpp"
 #include "Shader.hpp"
 #include "Timer.hpp"
-#include <glm/gtc/type_ptr.hpp>
 
 struct State
 {
