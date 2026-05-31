@@ -10,30 +10,19 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include "Camera.h"
 #include "Shader.hpp"
 #include "Timer.hpp"
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 struct State
 {
     Timer* timer = nullptr;
-
-    const float cam_speed = 5.0f;
-    const float mouse_speed = 0.0005f;
-
-    float cam_fov = 45.0f;
-    glm::vec3 cam_pos = glm::vec3(0, 0, 3.0f);
-    glm::vec2 cam_angle_deg = glm::vec2(3.14f, 0);
-    glm::vec2 mouse_pos = glm::vec2(0, 0);
-    glm::vec2 mouse_wheel_offset = glm::vec2(0, 0);
+    Camera camera;
 
     bool first_mouse = true;
     float last_x = 720.0f / 2.0f;
     float last_y = 480.0f / 2.0f;
-
-    glm::vec3 direction = glm::vec3(0, 0, 0);
-    glm::vec3 right = glm::vec3(0, 0, 0);
 
     int window_width = 720;
     int window_height = 480;
@@ -119,7 +108,7 @@ void loadOBJ(
         glm::vec2 uv = temp_uvs[uv_idx - 1];
         out_uvs.push_back(uv);
     }
-    
+
     for (size_t i = 0; i < normal_idxs.size(); ++i)
     {
         GLuint n_idx = normal_idxs[i];
@@ -200,8 +189,6 @@ int main(int argc, char** argv)
     glfwSetKeyCallback(window,
         [](GLFWwindow* window, int key, int scancode, int action, int mods)
         {
-            const float dt = static_cast<float>(state.timer->deltaTime());
-
             if (action == GLFW_PRESS)
             {
                 if (key == GLFW_KEY_ESCAPE)
@@ -236,16 +223,12 @@ int main(int argc, char** argv)
             state.last_x = xpos;
             state.last_y = ypos;
 
-            state.cam_angle_deg.x += xoffset * state.mouse_speed;
-            state.cam_angle_deg.y += yoffset * state.mouse_speed;
+            state.camera.processMouseMovement(xoffset, yoffset);
         });
     glfwSetScrollCallback(window,
         [](GLFWwindow* window, double xoffset, double yoffset)
         {
-            state.cam_fov -= static_cast<float>(yoffset) * 2.0f;
-            if (state.cam_fov < 1.0f) state.cam_fov = 1.0f;
-            if (state.cam_fov > 45.0f) state.cam_fov = 45.0f;
-            std::cout << "FOV: " << state.cam_fov << std::endl;
+            state.camera.processMouseScroll(yoffset);
         });
 
     Timer timer;
@@ -259,67 +242,43 @@ int main(int argc, char** argv)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        int fb_width, fb_height;
-        glfwGetFramebufferSize(window, &fb_width, &fb_height);
-
-        state.direction = glm::vec3(
-            cos(state.cam_angle_deg.y) * sin(state.cam_angle_deg.x),
-            sin(state.cam_angle_deg.y),
-            cos(state.cam_angle_deg.y) * cos(state.cam_angle_deg.x)
-        );
-
-        state.right = glm::vec3(
-            sin(state.cam_angle_deg.x - M_PI / 2.f),
-            0,
-            cos(state.cam_angle_deg.x - M_PI / 2.f)
-        );
-
-        glm::vec3 up = glm::cross(state.right, state.direction);
-
         const float dt = static_cast<float>(state.timer->deltaTime());
+
         if (glfwGetKey(window, GLFW_KEY_W))
         {
-            state.cam_pos += state.direction * state.cam_speed * dt;
-            std::cout << "FORWARD\n";
+            state.camera.processKeyboard(Camera::Direction::FORWARD, dt);
         }
         else if (glfwGetKey(window, GLFW_KEY_S))
         {
-            state.cam_pos -= state.direction * state.cam_speed * dt;
-            std::cout << "BACKWARD\n";
+            state.camera.processKeyboard(Camera::Direction::BACKWARD, dt);
         }
-        if (glfwGetKey(window, GLFW_KEY_A))
+        if (glfwGetKey(window, GLFW_KEY_D))
         {
-            state.cam_pos -= state.right * state.cam_speed * dt;
-            std::cout << "LEFT\n";
+            state.camera.processKeyboard(Camera::Direction::RIGHT, dt);
         }
-        else if (glfwGetKey(window, GLFW_KEY_D))
+        else if (glfwGetKey(window, GLFW_KEY_A))
         {
-            state.cam_pos += state.right * state.cam_speed * dt;
-            std::cout << "RIGHT\n";
+            state.camera.processKeyboard(Camera::Direction::LEFT, dt);
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE))
         {
-            state.cam_pos += up * state.cam_speed * dt;
-            std::cout << "UP\n";
+            state.camera.processKeyboard(Camera::Direction::UP, dt);
         }
         else if (glfwGetKey(window, GLFW_KEY_C))
         {
-            state.cam_pos -= up * state.cam_speed * dt;
-            std::cout << "DOWN\n";
+            state.camera.processKeyboard(Camera::Direction::DOWN, dt);
         }
-
-        glm::mat4 projection = glm::perspective(
-            glm::radians(state.cam_fov), 
-            state.screen_aspect_ratio, 
-            0.1f, 100.f);
-        glm::mat4 view = glm::lookAt(state.cam_pos, state.cam_pos + state.direction, up);
-        glm::mat4 model = glm::mat4(1.0f);
 
         shader.use();
 
         GLuint projectionLocation = glGetUniformLocation(shader.id(), "u_projection");
         GLuint modelLocation = glGetUniformLocation(shader.id(), "u_model");
         GLuint viewLocation = glGetUniformLocation(shader.id(), "u_view");
+
+        const glm::mat4 projection = state.camera.getProjectionMatrix(state.screen_aspect_ratio);
+        const glm::mat4 view = state.camera.getViewMatrix();
+        const glm::mat4 model = glm::mat4(1.0f);
+
         glUniformMatrix4fv(projectionLocation, 1, false, glm::value_ptr(projection));
         glUniformMatrix4fv(modelLocation, 1, false, glm::value_ptr(model));
         glUniformMatrix4fv(viewLocation, 1, false, glm::value_ptr(view));
