@@ -159,4 +159,8 @@ inline void Shader::reload()
     }
 
     m_id = program;
+
+    Log::info("Shaders recompiled and linked successfully!");
+    Log::info("  Vertex: '{}'", m_vertShaderFSPath.string());
+    Log::info("  Fragment: '{}'", m_fragShaderFSPath.string());
 }
