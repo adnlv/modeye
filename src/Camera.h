@@ -14,7 +14,8 @@ public:
         DOWN
     };
 
-    Camera(glm::vec3 position = glm::vec3(0, 0, 3.0f));
+    Camera(glm::vec3 position = glm::vec3(0, 0, 5.0f));
+    ~Camera() = default;
 
     glm::mat4 getViewMatrix() const;
     glm::mat4 getProjectionMatrix(float aspect) const;

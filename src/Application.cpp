@@ -162,7 +162,7 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
-    loadOBJ("assets\\dragon.obj", vertices, uvs, normals);
+    loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
