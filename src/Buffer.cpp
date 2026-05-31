@@ -69,7 +69,7 @@ VertexArray::~VertexArray()
 }
 
 VertexArray::VertexArray(VertexArray&& other) noexcept
-    : m_id(0)
+    : m_id(other.m_id)
 {
     other.m_id = 0;
 }
