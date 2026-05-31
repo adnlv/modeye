@@ -115,6 +115,35 @@ void loadOBJ(
     }
 }
 
+static void printSystemInfo()
+{
+    Log::info("OpenGL context created:");
+    Log::info("  GPU vendor:   {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+    Log::info("  GPU renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    Log::info("  GL version:   {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    Log::info("  GLSL version: {}", reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+    GLint maxTextureSize = 0;
+    GLint maxMsaaSamples = 0;
+    GLint maxVertexAttribs = 0;
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    glGetIntegerv(GL_MAX_SAMPLES, &maxMsaaSamples);
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
+
+    Log::info("GPU hardware capability limits:");
+    Log::info("  Max 2D texture size:   {}x{}", maxTextureSize, maxTextureSize);
+    Log::info("  Max MSAA samples:      {}x", maxMsaaSamples);
+    Log::info("  Max vertex attributes: {}", maxVertexAttribs);
+
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+    if (primaryMonitor)
+    {
+        const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+        Log::info("Primary monitor detected: {}x{} @ {}Hz", mode->width, mode->height, mode->refreshRate);
+    }
+}
+
 int main(int argc, char** argv)
 {
     Log::init();
@@ -140,6 +169,8 @@ int main(int argc, char** argv)
     //glfwSwapInterval(1);
 
     assert(gladLoadGL(glfwGetProcAddress) != 0);
+
+    printSystemInfo();
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
