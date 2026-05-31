@@ -34,11 +34,11 @@ Mesh::Mesh(const std::vector<Vertex>& vertices)
     );
 }
 
-void Mesh::draw(size_t vertexCount, GLenum mode) const
+void Mesh::draw(GLenum mode) const
 {
     m_vertexArray.bind();
 
-    glDrawArrays(mode, 0, static_cast<GLsizei>(vertexCount));
+    glDrawArrays(mode, 0, static_cast<GLsizei>(m_vertexCount));
 
     VertexArray::unbind();
 }

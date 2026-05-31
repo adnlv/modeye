@@ -274,7 +274,7 @@ int main(int argc, char** argv)
         glUniformMatrix4fv(modelLocation, 1, false, glm::value_ptr(model));
         glUniformMatrix4fv(viewLocation, 1, false, glm::value_ptr(view));
 
-        monkeyMesh.draw(newVertices.size(), GL_TRIANGLES);
+        monkeyMesh.draw(GL_TRIANGLES);
 
         glfwPollEvents();
         glfwSwapBuffers(window);

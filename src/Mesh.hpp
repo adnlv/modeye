@@ -16,7 +16,7 @@ public:
     Mesh(Mesh&&) noexcept = default;
     Mesh& operator=(Mesh&&) noexcept = default;
 
-    void draw(size_t vertexCount, GLenum mode) const;
+    void draw(GLenum mode) const;
 
     const VertexArray& vertexArray() const;
     const VertexBuffer& vertexBuffer() const;
