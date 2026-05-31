@@ -37,7 +37,7 @@ FetchContent_Declare(
 set(GLM_BUILD_TESTS OFF)
 FetchContent_MakeAvailable(glm)
 
-add_executable(modeye "src/Application.cpp" "src/Camera.cpp" "src/Buffer.cpp")
+add_executable(modeye "src/Application.cpp" "src/Camera.cpp" "src/Buffer.cpp" "src/Mesh.cpp")
 
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
 set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)

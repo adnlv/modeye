@@ -12,6 +12,7 @@
 
 #include "Buffer.hpp"
 #include "Camera.h"
+#include "Mesh.hpp"
 #include "Shader.hpp"
 #include "Timer.hpp"
 #include <glm/gtc/type_ptr.hpp>
@@ -165,13 +166,15 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> normals;
     loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
 
-    VertexArray vertexArray;
-    
-    VertexBuffer pointsVertexBuffer(vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
-    vertexArray.linkAttrib(pointsVertexBuffer, 0, 3, GL_FLOAT, 0, 0);
+    std::vector<Vertex> newVertices(vertices.size());
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        newVertices.at(i).position = vertices.at(i);
+        newVertices.at(i).normal = normals.at(i);
+        newVertices.at(i).uv = uvs.at(i);
+    }
 
-    VertexBuffer colorsVertexBuffer(normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
-    vertexArray.linkAttrib(colorsVertexBuffer, 1, 3, GL_FLOAT, 0, 0);
+    Mesh monkeyMesh(newVertices);
 
     Shader shader("triangle.vert", "triangle.frag");
     glfwSetWindowUserPointer(window, &shader);
@@ -271,9 +274,7 @@ int main(int argc, char** argv)
         glUniformMatrix4fv(modelLocation, 1, false, glm::value_ptr(model));
         glUniformMatrix4fv(viewLocation, 1, false, glm::value_ptr(view));
 
-        vertexArray.bind();
-        pointsVertexBuffer.bind();
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));
+        monkeyMesh.draw(newVertices.size(), GL_TRIANGLES);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
