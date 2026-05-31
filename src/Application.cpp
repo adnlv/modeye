@@ -152,6 +152,8 @@ int main(int argc, char** argv)
             state.window_width = width;
             state.window_height = height;
             state.screen_aspect_ratio = static_cast<float>(state.window_width) / static_cast<float>(state.window_height);
+            
+            Log::info("Framebuffer resized to: {}x{} | Aspect Ratio: {:.3f}", width, height, state.screen_aspect_ratio);
         });
 
     std::vector<glm::vec3> vertices;
