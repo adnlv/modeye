@@ -11,7 +11,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Buffer.hpp"
-#include "Camera.h"
+#include "Camera.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
 #include "Timer.hpp"
