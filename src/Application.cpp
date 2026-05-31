@@ -148,6 +148,7 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
 
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow* window, int width, int height)
@@ -161,7 +162,7 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
-    loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
+    loadOBJ("assets\\dragon.obj", vertices, uvs, normals);
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -228,7 +229,7 @@ int main(int argc, char** argv)
     glfwSetScrollCallback(window,
         [](GLFWwindow* window, double xoffset, double yoffset)
         {
-            state.camera.processMouseScroll(yoffset);
+            state.camera.processMouseScroll(static_cast<float>(yoffset));
         });
 
     while (!glfwWindowShouldClose(window))
@@ -283,7 +284,7 @@ int main(int argc, char** argv)
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));
 
         glfwPollEvents();
         glfwSwapBuffers(window);
