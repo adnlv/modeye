@@ -1,4 +1,5 @@
 #include "Buffer.hpp"
+#include "Log.hpp"
 
 VertexBuffer::VertexBuffer(size_t size, const void* data, GLenum usage)
     : m_id(0)
@@ -6,12 +7,16 @@ VertexBuffer::VertexBuffer(size_t size, const void* data, GLenum usage)
     glGenBuffers(1, &m_id);
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
     glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, usage);
+
+    Log::trace("Generated vertex buffer (ID: {})", m_id);
 }
 
 VertexBuffer::~VertexBuffer()
 {
     if (m_id != 0)
     {
+        Log::trace("Deleted vertex buffer (ID: {})", m_id);
+
         glDeleteBuffers(1, &m_id);
     }
 }
@@ -58,12 +63,16 @@ VertexArray::VertexArray()
 {
     glGenVertexArrays(1, &m_id);
     glBindVertexArray(m_id);
+ 
+    Log::trace("Generated vertex array (ID: {})", m_id);
 }
 
 VertexArray::~VertexArray()
 {
     if (m_id != 0)
     {
+        Log::trace("Deleted vertex array (ID: {})", m_id);
+
         glDeleteVertexArrays(1, &m_id);
     }
 }
