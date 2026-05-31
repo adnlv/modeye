@@ -1,6 +1,3 @@
-#define _USE_MATH_DEFINES
-#include <cmath>
-
 #include <cassert>
 #include <iostream>
 
@@ -10,7 +7,6 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "Buffer.hpp"
 #include "Camera.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
