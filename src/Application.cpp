@@ -270,9 +270,9 @@ int main(int argc, char** argv)
 
         shader.use();
 
-        GLuint projectionLocation = glGetUniformLocation(shader.id(), "u_projection");
-        GLuint modelLocation = glGetUniformLocation(shader.id(), "u_model");
-        GLuint viewLocation = glGetUniformLocation(shader.id(), "u_view");
+        const GLuint projectionLocation = glGetUniformLocation(shader.id(), "u_projection");
+        const GLuint modelLocation = glGetUniformLocation(shader.id(), "u_model");
+        const GLuint viewLocation = glGetUniformLocation(shader.id(), "u_view");
 
         const glm::mat4 projection = state.camera.getProjectionMatrix(state.screen_aspect_ratio);
         const glm::mat4 view = state.camera.getViewMatrix();
