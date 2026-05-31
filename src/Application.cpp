@@ -10,6 +10,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include "Buffer.hpp"
 #include "Camera.h"
 #include "Shader.hpp"
 #include "Timer.hpp"
@@ -168,18 +169,12 @@ int main(int argc, char** argv)
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    GLuint points_vbo;
-    glGenBuffers(1, &points_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+    VertexBuffer pointsVertexBuffer(vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
 
-    GLuint colors_vbo;
-    glGenBuffers(1, &colors_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
+    VertexBuffer colorsVertexBuffer(normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
@@ -283,7 +278,7 @@ int main(int argc, char** argv)
         glUniformMatrix4fv(viewLocation, 1, false, glm::value_ptr(view));
 
         glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+        pointsVertexBuffer.bind();
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));
 
         glfwPollEvents();
