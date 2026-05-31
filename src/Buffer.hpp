@@ -22,3 +22,33 @@ public:
 private:
     GLuint m_id;
 };
+
+class VertexArray
+{
+public:
+    VertexArray();
+    ~VertexArray();
+
+    VertexArray(const VertexArray&) = delete;
+    VertexArray& operator=(const VertexArray&) = delete;
+
+    VertexArray(VertexArray&& other) noexcept;
+    VertexArray& operator=(VertexArray&& other) noexcept;
+
+    void bind() const;
+    void linkAttrib(
+        const VertexBuffer& vertexBuffer,
+        GLuint layout,
+        GLuint numComponents,
+        GLenum type, 
+        GLsizei stride, 
+        const void* offset
+    ) const;
+    
+    static void unbind();
+
+    GLuint id() const;
+
+private:
+    GLuint m_id;
+};

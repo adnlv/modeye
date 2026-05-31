@@ -1,6 +1,6 @@
 #include "Buffer.hpp"
 
-VertexBuffer::VertexBuffer(size_t size, const void* data, GLenum usage) 
+VertexBuffer::VertexBuffer(size_t size, const void* data, GLenum usage)
     : m_id(0)
 {
     glGenBuffers(1, &m_id);
@@ -30,11 +30,11 @@ VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept
         {
             glDeleteBuffers(1, &m_id);
         }
-    
+
         m_id = other.m_id;
         other.m_id = 0;
     }
-    
+
     return *this;
 }
 
@@ -49,6 +49,70 @@ void VertexBuffer::unbind()
 }
 
 GLuint VertexBuffer::id() const
+{
+    return m_id;
+}
+
+VertexArray::VertexArray()
+    : m_id(0)
+{
+    glGenVertexArrays(1, &m_id);
+    glBindVertexArray(m_id);
+}
+
+VertexArray::~VertexArray()
+{
+    if (m_id != 0)
+    {
+        glDeleteVertexArrays(1, &m_id);
+    }
+}
+
+VertexArray::VertexArray(VertexArray&& other) noexcept
+    : m_id(0)
+{
+    other.m_id = 0;
+}
+
+VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
+{
+    if (this != &other)
+    {
+        if (m_id != 0)
+        {
+            glDeleteVertexArrays(1, &m_id);
+        }
+
+        m_id = other.m_id;
+        other.m_id = 0;
+    }
+
+    return *this;
+}
+
+void VertexArray::bind() const
+{
+    glBindVertexArray(m_id);
+}
+
+void VertexArray::linkAttrib(const VertexBuffer& vertexBuffer, GLuint layout, GLuint numComponents, GLenum type, GLsizei stride, const void* offset) const
+{
+    bind();
+    vertexBuffer.bind();
+
+    glEnableVertexAttribArray(layout);
+    glVertexAttribPointer(layout, numComponents, type, GL_FALSE, stride, offset);
+
+    VertexBuffer::unbind();
+    VertexArray::unbind();
+}
+
+void VertexArray::unbind()
+{
+    glBindVertexArray(0);
+}
+
+GLuint VertexArray::id() const
 {
     return m_id;
 }

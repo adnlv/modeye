@@ -165,19 +165,13 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> normals;
     loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
 
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
+    VertexArray vertexArray;
+    
     VertexBuffer pointsVertexBuffer(vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
+    vertexArray.linkAttrib(pointsVertexBuffer, 0, 3, GL_FLOAT, 0, 0);
 
     VertexBuffer colorsVertexBuffer(normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, reinterpret_cast<void*>(0));
+    vertexArray.linkAttrib(colorsVertexBuffer, 1, 3, GL_FLOAT, 0, 0);
 
     Shader shader("triangle.vert", "triangle.frag");
     glfwSetWindowUserPointer(window, &shader);
@@ -277,7 +271,7 @@ int main(int argc, char** argv)
         glUniformMatrix4fv(modelLocation, 1, false, glm::value_ptr(model));
         glUniformMatrix4fv(viewLocation, 1, false, glm::value_ptr(view));
 
-        glBindVertexArray(vao);
+        vertexArray.bind();
         pointsVertexBuffer.bind();
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));
 
