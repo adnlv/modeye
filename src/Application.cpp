@@ -258,17 +258,13 @@ int main(int argc, char** argv)
 
         shader.use();
 
-        const GLuint projectionLocation = glGetUniformLocation(shader.id(), "u_projection");
-        const GLuint modelLocation = glGetUniformLocation(shader.id(), "u_model");
-        const GLuint viewLocation = glGetUniformLocation(shader.id(), "u_view");
-
         const glm::mat4 projection = state.camera.getProjectionMatrix(state.screen_aspect_ratio);
         const glm::mat4 view = state.camera.getViewMatrix();
         const glm::mat4 model = glm::mat4(1.0f);
 
-        glUniformMatrix4fv(projectionLocation, 1, false, glm::value_ptr(projection));
-        glUniformMatrix4fv(modelLocation, 1, false, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLocation, 1, false, glm::value_ptr(view));
+        shader.setMat4("u_projection", projection);
+        shader.setMat4("u_model", model);
+        shader.setMat4("u_view", view);
 
         monkeyMesh.draw(GL_TRIANGLES);
 
