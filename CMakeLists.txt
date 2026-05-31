@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.28)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -37,13 +37,20 @@ FetchContent_Declare(
 set(GLM_BUILD_TESTS OFF)
 FetchContent_MakeAvailable(glm)
 
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.17.0
+)
+FetchContent_MakeAvailable(spdlog)
+
 add_executable(modeye "src/Application.cpp" "src/Camera.cpp" "src/Buffer.cpp" "src/Mesh.cpp")
 
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
 set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET modeye PROPERTY CXX_EXTENSIONS OFF)
 
-target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm)
+target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm spdlog::spdlog)
 
 set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-g")
 set(MODEYE_UNIX_RELEASE_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-Werror" "-O3")
