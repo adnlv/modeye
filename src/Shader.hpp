@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <glm/gtc/type_ptr.hpp>
+#include "Log.hpp"
 
 class Shader
 {
@@ -101,7 +102,7 @@ inline void Shader::reload()
     }
     catch (const std::exception& e)
     {
-        std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ >> " << e.what() << std::endl;
+        Log::error("SHADER::FILE_NOT_SUCCESFULLY_READ >> {}", e.what());
         std::abort();
     }
 
@@ -116,7 +117,7 @@ inline void Shader::reload()
     if (!success)
     {
         glGetShaderInfoLog(vertShader, sizeof(infoLog), nullptr, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED >> " << infoLog << std::endl;
+        Log::error("SHADER::VERTEX::COMPILATION_FAILED >> {}", infoLog);
         std::abort();
     };
 
@@ -129,7 +130,7 @@ inline void Shader::reload()
     if (!success)
     {
         glGetShaderInfoLog(fragShader, sizeof(infoLog), nullptr, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED >> " << infoLog << std::endl;
+        Log::error("SHADER::FRAGMENT::COMPILATION_FAILED >> {}", infoLog);
         std::abort();
     };
 
@@ -142,7 +143,7 @@ inline void Shader::reload()
     if (!success)
     {
         glGetProgramInfoLog(program, sizeof(infoLog), nullptr, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKAGE_FAILED >> " << infoLog << std::endl;
+        Log::error("SHADER::PROGRAM::LINKAGE_FAILED >> {}", infoLog);
         std::abort();
     }
 

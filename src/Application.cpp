@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Camera.hpp"
+#include "Log.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
 #include "Timer.hpp"
@@ -116,15 +117,12 @@ void loadOBJ(
 
 int main(int argc, char** argv)
 {
+    Log::init();
+
     glfwSetErrorCallback(
         [](int error_code, const char* description)
         {
-            std::cerr
-                << "ERROR::GLFW ("
-                << error_code
-                << ") >> "
-                << description
-                << std::endl;
+            Log::error("GLFW ({}) >> {}", error_code, description);
         });
 
     assert(glfwInit());
@@ -139,7 +137,7 @@ int main(int argc, char** argv)
     assert(window != nullptr);
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    //glfwSwapInterval(1);
 
     assert(gladLoadGL(glfwGetProcAddress) != 0);
 

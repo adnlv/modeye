@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <iostream>
+#include "Log.hpp"
 
 class Timer
 {
@@ -73,7 +73,7 @@ public:
             m_frameCount = 0;
             m_fpsTimer = 0;
 
-            std::cout << "FPS: " << m_currentFPS << std::endl;
+            Log::debug("framesPerSecond {:>5} | deltaTime {:.7f}", m_currentFPS, m_deltaTime);
         }
     }
 };
