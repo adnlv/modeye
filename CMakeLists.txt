@@ -44,7 +44,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
-add_executable(modeye "src/Application.cpp" "src/Camera.cpp" "src/Buffer.cpp" "src/Mesh.cpp" "src/Log.cpp")
+add_executable(modeye 
+    "src/Application.cpp" 
+    "src/Log.cpp" 
+    "src/Buffer.cpp" 
+    "src/Mesh.cpp" 
+    "src/Shader.cpp"
+    "src/Camera.cpp"
+    "src/Timer.cpp"
+)
 
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
 set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)
