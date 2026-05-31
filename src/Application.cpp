@@ -20,7 +20,7 @@ struct State
     Timer* timer = nullptr;
 
     const float cam_speed = 5.0f;
-    const float mouse_speed = 0.05f;
+    const float mouse_speed = 0.0005f;
 
     float cam_fov = 45.0f;
     glm::vec3 cam_pos = glm::vec3(0, 0, 3.0f);
@@ -236,9 +236,8 @@ int main(int argc, char** argv)
             state.last_x = xpos;
             state.last_y = ypos;
 
-            const float dt = static_cast<float>(state.timer->deltaTime());
-            state.cam_angle_deg.x += xoffset * state.mouse_speed * dt;
-            state.cam_angle_deg.y += yoffset * state.mouse_speed * dt;
+            state.cam_angle_deg.x += xoffset * state.mouse_speed;
+            state.cam_angle_deg.y += yoffset * state.mouse_speed;
         });
     glfwSetScrollCallback(window,
         [](GLFWwindow* window, double xoffset, double yoffset)
