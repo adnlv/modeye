@@ -17,7 +17,7 @@
 
 struct State
 {
-    Timer* timer = nullptr;
+    Timer timer;
     Camera camera;
 
     bool first_mouse = true;
@@ -231,18 +231,16 @@ int main(int argc, char** argv)
             state.camera.processMouseScroll(yoffset);
         });
 
-    Timer timer;
-    state.timer = &timer;
     while (!glfwWindowShouldClose(window))
     {
-        timer.startFrame();
+        state.timer.startFrame();
 
         glfwPollEvents();
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const float dt = static_cast<float>(state.timer->deltaTime());
+        const float dt = static_cast<float>(state.timer.deltaTime());
 
         if (glfwGetKey(window, GLFW_KEY_W))
         {
@@ -290,7 +288,7 @@ int main(int argc, char** argv)
         glfwPollEvents();
         glfwSwapBuffers(window);
 
-        timer.endFrame();
+        state.timer.endFrame();
     }
 
     glfwTerminate();
