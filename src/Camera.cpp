@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "Log.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -51,7 +52,7 @@ void Camera::processMouseMovement(float offset_x, float offset_y)
 {
     m_yaw -= offset_x * m_sensivity;
     m_pitch += offset_y * m_sensivity;
-   
+
     if (m_pitch > 89.0f) m_pitch = 89.0f;
     else if (m_pitch < -89.0f) m_pitch = -89.0f;
 
@@ -62,8 +63,18 @@ void Camera::processMouseScroll(float offset_y)
 {
     m_fov -= offset_y;
 
-    if (m_fov > 45.0f) m_fov = 45.0f;
-    else if (m_fov < 1.0f) m_fov = 1.0f;
+    if (m_fov > 45.0f)
+    {
+        m_fov = 45.0f;
+    }
+    else if (m_fov < 1.0f)
+    {
+        m_fov = 1.0f;
+    }
+    else
+    {
+        Log::info("Camera FOV changed to: {:.1f} deg (Zoom factor: {:.1f}x)", m_fov, 45.0f / m_fov);
+    }
 }
 
 void Camera::updateVectors()
