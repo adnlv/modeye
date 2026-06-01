@@ -17,10 +17,6 @@ struct State
     bool first_mouse = true;
     float last_x = 720.0f / 2.0f;
     float last_y = 480.0f / 2.0f;
-
-    int window_width = 720;
-    int window_height = 480;
-    float screen_aspect_ratio = 1;
 } state;
 
 void loadOBJ(
@@ -210,7 +206,7 @@ int main(int argc, char** argv)
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Down, dt);
         }
 
-        shader.setMat4("u_projection", state.camera.getProjectionMat(state.screen_aspect_ratio));
+        shader.setMat4("u_projection", state.camera.getProjectionMat(window.aspectRatio()));
         shader.setMat4("u_model", state.camera.getViewMat());
         shader.setMat4("u_view", glm::mat4(1.0f));
         shader.use();
