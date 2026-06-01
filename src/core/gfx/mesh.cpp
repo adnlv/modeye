@@ -1,53 +1,53 @@
-#include "mesh.hpp"
+#include "Mesh.hpp"
 
-modeye::gfx::mesh::mesh(const std::vector<modeye::gfx::vertex>& vertices)
+Modeye::Gfx::Mesh::Mesh(const std::vector<Modeye::Gfx::Vertex>& vertices)
     : m_vertexCount(static_cast<GLsizei>(vertices.size())),
     m_vertexArray(),
-    m_vertexBuffer(vertices.size() * sizeof(modeye::gfx::vertex), vertices.data(), GL_STATIC_DRAW)
+    m_vertexBuffer(vertices.size() * sizeof(Modeye::Gfx::Vertex), vertices.data(), GL_STATIC_DRAW)
 {
-    m_vertexArray.link_attrib(
+    m_vertexArray.linkAttrib(
         m_vertexBuffer,
         0,
         3,
         GL_FLOAT,
-        sizeof(modeye::gfx::vertex),
-        reinterpret_cast<const void*>(offsetof(modeye::gfx::vertex, position))
+        sizeof(Modeye::Gfx::Vertex),
+        reinterpret_cast<const void*>(offsetof(Modeye::Gfx::Vertex, position))
     );
 
-    m_vertexArray.link_attrib(
+    m_vertexArray.linkAttrib(
         m_vertexBuffer,
         1,
         3,
         GL_FLOAT,
-        sizeof(modeye::gfx::vertex),
-        reinterpret_cast<const void*>(offsetof(modeye::gfx::vertex, normal))
+        sizeof(Modeye::Gfx::Vertex),
+        reinterpret_cast<const void*>(offsetof(Modeye::Gfx::Vertex, normal))
     );
 
-    m_vertexArray.link_attrib(
+    m_vertexArray.linkAttrib(
         m_vertexBuffer,
         2,
         2,
         GL_FLOAT,
-        sizeof(modeye::gfx::vertex),
-        reinterpret_cast<const void*>(offsetof(modeye::gfx::vertex, uv))
+        sizeof(Modeye::Gfx::Vertex),
+        reinterpret_cast<const void*>(offsetof(Modeye::Gfx::Vertex, uv))
     );
 }
 
-void modeye::gfx::mesh::draw(GLenum mode) const
+void Modeye::Gfx::Mesh::draw(GLenum mode) const
 {
     m_vertexArray.bind();
 
     glDrawArrays(mode, 0, static_cast<GLsizei>(m_vertexCount));
 
-    modeye::gfx::vertex_array::unbind();
+    Modeye::Gfx::VertexArray::unbind();
 }
 
-const modeye::gfx::vertex_array& modeye::gfx::mesh::vertex_array() const
+const Modeye::Gfx::VertexArray& Modeye::Gfx::Mesh::vertexArray() const
 {
     return m_vertexArray;
 }
 
-const modeye::gfx::vertex_buffer& modeye::gfx::mesh::vertex_buffer() const
+const Modeye::Gfx::VertexBuffer& Modeye::Gfx::Mesh::vertexBuffer() const
 {
     return m_vertexBuffer;
 }

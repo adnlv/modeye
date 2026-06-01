@@ -1,49 +1,49 @@
-#include "../log.hpp"
-#include "shader.hpp"
+#include "../Log.hpp"
+#include "Shader.hpp"
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 
-modeye::gfx::shader::shader(const std::string& vert_shader_path, const std::string& frag_shader_path)
+Modeye::Gfx::Shader::Shader(const std::string& vertShader_path, const std::string& fragShaderPath)
 {
     std::filesystem::path dir("shaders");
-    m_vertShaderFSPath = dir / vert_shader_path;
-    m_fragShaderFSPath = dir / frag_shader_path;
+    m_vertShaderFsPath = dir / vertShader_path;
+    m_fragShaderFsPath = dir / fragShaderPath;
 
     reload();
 }
 
-modeye::gfx::shader::~shader()
+Modeye::Gfx::Shader::~Shader()
 {
     glDeleteProgram(m_id);
 }
 
-GLuint modeye::gfx::shader::id() const
+GLuint Modeye::Gfx::Shader::id() const
 {
     return m_id;
 }
 
-void modeye::gfx::shader::use() const
+void Modeye::Gfx::Shader::use() const
 {
     glUseProgram(m_id);
 }
 
-void modeye::gfx::shader::set_int(const std::string& name, int value) const
+void Modeye::Gfx::Shader::setInt(const std::string& name, int value) const
 {
     glUniform1i(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
-void modeye::gfx::shader::set_float(const std::string& name, float value) const
+void Modeye::Gfx::Shader::setFloat(const std::string& name, float value) const
 {
     glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
-void modeye::gfx::shader::set_mat4(const std::string& name, const glm::mat4& value) const
+void Modeye::Gfx::Shader::setMat4(const std::string& name, const glm::mat4& value) const
 {
     glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, false, glm::value_ptr(value));
 }
 
-void modeye::gfx::shader::reload()
+void Modeye::Gfx::Shader::reload()
 {
     std::string vertShaderSrc;
     std::string fragShaderSrc;
@@ -56,8 +56,8 @@ void modeye::gfx::shader::reload()
 
     try
     {
-        vertShaderFile.open(m_vertShaderFSPath);
-        fragShaderFile.open(m_fragShaderFSPath);
+        vertShaderFile.open(m_vertShaderFsPath);
+        fragShaderFile.open(m_fragShaderFsPath);
 
         std::stringstream vertShaderStream;
         std::stringstream fragShaderStream;
@@ -73,7 +73,7 @@ void modeye::gfx::shader::reload()
     }
     catch (const std::exception& e)
     {
-        modeye::log::error("Failed to open shader file: {}", e.what());
+        Modeye::Log::error("Failed to open shader file: {}", e.what());
         std::abort();
     }
 
@@ -88,7 +88,7 @@ void modeye::gfx::shader::reload()
     if (!success)
     {
         glGetShaderInfoLog(vertShader, sizeof(infoLog), nullptr, infoLog);
-        modeye::log::error("Vertex shader compilation failed: {}", infoLog);
+        Modeye::Log::error("Vertex shader compilation failed: {}", infoLog);
         std::abort();
     };
 
@@ -101,7 +101,7 @@ void modeye::gfx::shader::reload()
     if (!success)
     {
         glGetShaderInfoLog(fragShader, sizeof(infoLog), nullptr, infoLog);
-        modeye::log::error("Fragment shader compilation failed: {}", infoLog);
+        Modeye::Log::error("Fragment shader compilation failed: {}", infoLog);
         std::abort();
     };
 
@@ -114,7 +114,7 @@ void modeye::gfx::shader::reload()
     if (!success)
     {
         glGetProgramInfoLog(program, sizeof(infoLog), nullptr, infoLog);
-        modeye::log::error("Shader program linkage failed: {}", infoLog);
+        Modeye::Log::error("Shader program linkage failed: {}", infoLog);
         std::abort();
     }
 
@@ -131,7 +131,7 @@ void modeye::gfx::shader::reload()
 
     m_id = program;
 
-    modeye::log::info("Shaders compiled and linked successfully:");
-    modeye::log::info("  Vertex shader path: '{}'", m_vertShaderFSPath.string());
-    modeye::log::info("  Fragment shader path: '{}'", m_fragShaderFSPath.string());
+    Modeye::Log::info("Shaders compiled and linked successfully:");
+    Modeye::Log::info("  Vertex shader path: '{}'", m_vertShaderFsPath.string());
+    Modeye::Log::info("  Fragment shader path: '{}'", m_fragShaderFsPath.string());
 }

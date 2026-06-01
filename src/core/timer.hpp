@@ -1,27 +1,27 @@
 #pragma once
 
-namespace modeye
+namespace Modeye
 {
-    class timer
+    class Timer
     {
     private:
         double m_deltaTime = 0;
         double m_frameStart = 0;
 
-        double m_targetFPS = 0;
+        double m_targetFps = 0;
         double m_targetFrameTime = 0;
 
         double m_fpsTimer = 0;
         int m_frameCount = 0;
-        int m_currentFPS = 0;
+        int m_currentFps = 0;
 
     public:
-        timer() = default;
-        timer(float target_fps);
-        ~timer() = default;
+        Timer() = default;
+        Timer(float targetFps);
+        ~Timer() = default;
 
         float time() const;
-        float delta_time() const;
+        float deltaTime() const;
         int fps() const;
 
         void startFrame();

@@ -1,32 +1,29 @@
 #pragma once
-#include "vertex.hpp"
-#include "vertex_array.hpp"
+#include "Vertex.hpp"
+#include "VertexArray.hpp"
 
-namespace modeye
+namespace Modeye::Gfx
 {
-    namespace gfx
+    class Mesh
     {
-        class mesh
-        {
-        public:
-            mesh(const std::vector<modeye::gfx::vertex>& vertices);
-            ~mesh() = default;
+    public:
+        Mesh(const std::vector<Modeye::Gfx::Vertex>& vertices);
+        ~Mesh() = default;
 
-            mesh(const mesh&) = delete;
-            mesh& operator=(const mesh&) = delete;
+        Mesh(const Mesh&) = delete;
+        Mesh& operator=(const Mesh&) = delete;
 
-            mesh(mesh&&) noexcept = default;
-            mesh& operator=(mesh&&) noexcept = default;
+        Mesh(Mesh&&) noexcept = default;
+        Mesh& operator=(Mesh&&) noexcept = default;
 
-            void draw(GLenum mode) const;
+        void draw(GLenum mode) const;
 
-            const modeye::gfx::vertex_array& vertex_array() const;
-            const modeye::gfx::vertex_buffer& vertex_buffer() const;
+        const Modeye::Gfx::VertexArray& vertexArray() const;
+        const Modeye::Gfx::VertexBuffer& vertexBuffer() const;
 
-        private:
-            modeye::gfx::vertex_array m_vertexArray;
-            modeye::gfx::vertex_buffer m_vertexBuffer;
-            GLsizei m_vertexCount;
-        };
-    }
+    private:
+        VertexArray m_vertexArray;
+        VertexBuffer m_vertexBuffer;
+        GLsizei m_vertexCount;
+    };
 }

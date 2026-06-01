@@ -1,45 +1,45 @@
 #include "../log.hpp"
-#include "camera.hpp"
+#include "Camera.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
-modeye::gfx::camera::camera(glm::vec3 position)
+Modeye::Gfx::Camera::Camera(glm::vec3 position)
     : m_position(position), m_pitch(0.0f), m_yaw(-90.0f), m_fov(45.f)
 {
-    update_vectors();
+    updateVectors();
 }
 
-glm::mat4 modeye::gfx::camera::get_view_mat() const
+glm::mat4 Modeye::Gfx::Camera::getViewMat() const
 {
     return glm::lookAt(m_position, m_position + m_front, m_up);
 }
 
-glm::mat4 modeye::gfx::camera::get_projection_mat(float aspect) const
+glm::mat4 Modeye::Gfx::Camera::getProjectionMat(float aspect) const
 {
     return glm::perspective(glm::radians(m_fov), aspect, 0.1f, 100.0f);
 }
 
-void modeye::gfx::camera::process_keyboard(modeye::gfx::camera::direction direction, float delta_time)
+void Modeye::Gfx::Camera::processKeyboard(Modeye::Gfx::Camera::Direction direction, float deltaTime)
 {
-    const float velocity = m_speed * delta_time;
+    const float velocity = m_speed * deltaTime;
 
     switch (direction)
     {
-    case modeye::gfx::camera::FORWARD:
+    case Modeye::Gfx::Camera::Direction::Forward:
         m_position += m_front * velocity;
         break;
-    case modeye::gfx::camera::BACKWARD:
+    case Modeye::Gfx::Camera::Direction::Backward:
         m_position -= m_front * velocity;
         break;
-    case modeye::gfx::camera::RIGHT:
+    case Modeye::Gfx::Camera::Direction::Right:
         m_position += m_right * velocity;
         break;
-    case modeye::gfx::camera::LEFT:
+    case Modeye::Gfx::Camera::Direction::Left:
         m_position -= m_right * velocity;
         break;
-    case modeye::gfx::camera::UP:
+    case Modeye::Gfx::Camera::Direction::Up:
         m_position += m_up * velocity;
         break;
-    case modeye::gfx::camera::DOWN:
+    case Modeye::Gfx::Camera::Direction::Down:
         m_position -= m_up * velocity;
         break;
     default:
@@ -47,10 +47,10 @@ void modeye::gfx::camera::process_keyboard(modeye::gfx::camera::direction direct
     }
 }
 
-void modeye::gfx::camera::process_mouse_movement(float offset_x, float offset_y)
+void Modeye::Gfx::Camera::processMouseMovement(float xOffset, float yOffset)
 {
-    m_yaw -= offset_x * m_sensivity;
-    m_pitch += offset_y * m_sensivity;
+    m_yaw -= xOffset * m_sensivity;
+    m_pitch += yOffset * m_sensivity;
 
     if (m_pitch > 89.0f)
     {
@@ -61,12 +61,12 @@ void modeye::gfx::camera::process_mouse_movement(float offset_x, float offset_y)
         m_pitch = -89.0f;
     }
 
-    update_vectors();
+    updateVectors();
 }
 
-void modeye::gfx::camera::process_mouse_scroll(float offset_y)
+void Modeye::Gfx::Camera::processMouseScroll(float yOffset)
 {
-    m_fov -= offset_y;
+    m_fov -= yOffset;
 
     if (m_fov > 45.0f)
     {
@@ -78,11 +78,11 @@ void modeye::gfx::camera::process_mouse_scroll(float offset_y)
     }
     else
     {
-        modeye::log::info("Camera FOV changed to: {:.1f} deg (Zoom factor: {:.1f}x)", m_fov, 45.0f / m_fov);
+        Modeye::Log::info("Camera FOV changed to: {:.1f} deg (Zoom factor: {:.1f}x)", m_fov, 45.0f / m_fov);
     }
 }
 
-void modeye::gfx::camera::update_vectors()
+void Modeye::Gfx::Camera::updateVectors()
 {
     const float pitch_rad = glm::radians(m_pitch);
     const float yaw_rad = glm::radians(m_yaw);

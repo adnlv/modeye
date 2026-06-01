@@ -46,13 +46,13 @@ FetchContent_MakeAvailable(spdlog)
 
 add_executable(modeye 
     "src/main.cpp" 
-    "src/core/log.cpp"
-    "src/core/timer.cpp"
-    "src/core/gfx/camera.cpp"
-    "src/core/gfx/mesh.cpp"
-    "src/core/gfx/shader.cpp"
-    "src/core/gfx/vertex_array.cpp"
-    "src/core/gfx/vertex_buffer.cpp"
+    "src/core/Log.cpp"
+    "src/core/Timer.cpp"
+    "src/core/gfx/Camera.cpp"
+    "src/core/gfx/Mesh.cpp"
+    "src/core/gfx/Shader.cpp"
+    "src/core/gfx/VertexArray.cpp"
+    "src/core/gfx/VertexBuffer.cpp"
 )
 
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
