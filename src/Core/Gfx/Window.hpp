@@ -4,7 +4,6 @@
 // GLAD must be included first
 #include <GLFW/glfw3.h>
 
-#include <memory>
 #include <string>
 
 namespace Modeye::Gfx
