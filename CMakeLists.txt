@@ -45,7 +45,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 add_executable(modeye 
-    "src/main.cpp" 
+    "src/Main.cpp" 
     "src/Core/Log.cpp"
     "src/Core/Timer.cpp"
     "src/Core/Gfx/Camera.cpp"
