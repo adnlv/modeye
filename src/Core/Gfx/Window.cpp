@@ -60,8 +60,8 @@ Modeye::Gfx::Window::~Window()
         Modeye::Log::trace("Destroyed GLFW window");
 
         glfwDestroyWindow(m_glfwWindow);
+        glfwTerminate();
     }
-    glfwTerminate();
 }
 
 void Modeye::Gfx::Window::glfwErrorCallback(int errorCode, const char* description)
