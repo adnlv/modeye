@@ -53,6 +53,7 @@ add_executable(modeye
     "src/Core/Gfx/Shader.cpp"
     "src/Core/Gfx/VertexArray.cpp"
     "src/Core/Gfx/VertexBuffer.cpp"
+    "src/Core/Gfx/Window.cpp"
 )
 
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)

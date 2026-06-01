@@ -113,78 +113,13 @@ void loadOBJ(
     Modeye::Log::info("Loaded {} vertices from '{}'", out_vertices.size(), path);
 }
 
-static void printSystemInfo()
+int main(int argc, char** argv)
 {
-    Modeye::Log::info("OpenGL context created:");
-    Modeye::Log::info("  GPU vendor:   {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
-    Modeye::Log::info("  GPU renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-    Modeye::Log::info("  GL version:   {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-    Modeye::Log::info("  GLSL version: {}", reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+    Modeye::Log::init();
 
-    GLint maxTextureSize = 0;
-    GLint maxMsaaSamples = 0;
-    GLint maxVertexAttribs = 0;
-
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
-    glGetIntegerv(GL_MAX_SAMPLES, &maxMsaaSamples);
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
-
-    Modeye::Log::info("GPU hardware capability limits:");
-    Modeye::Log::info("  Max 2D texture size:   {}x{}", maxTextureSize, maxTextureSize);
-    Modeye::Log::info("  Max MSAA samples:      {}x", maxMsaaSamples);
-    Modeye::Log::info("  Max vertex attributes: {}", maxVertexAttribs);
-
-    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-    if (primaryMonitor)
-    {
-        const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-        Modeye::Log::info("Primary monitor detected: {}x{} @ {}Hz", mode->width, mode->height, mode->refreshRate);
-    }
-}
-
-static GLFWwindow* loadGfx()
-{
-    glfwSetErrorCallback(
-        [](int error_code, const char* description)
-        {
-            Modeye::Log::error("GLFW ({}) >> {}", error_code, description);
-        });
-
-    assert(glfwInit());
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 8);
-
-    GLFWwindow* window = glfwCreateWindow(state.window_width, state.window_height, "ModEye", nullptr, nullptr);
-    assert(window != nullptr);
-
-    glfwMakeContextCurrent(window);
-    //glfwSwapInterval(1);
-
-    assert(gladLoadGL(glfwGetProcAddress) != 0);
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_CULL_FACE);
-
-    printSystemInfo();
-
-    glfwSetFramebufferSizeCallback(window,
-        [](GLFWwindow* window, int width, int height)
-        {
-            glViewport(0, 0, width, height);
-            state.window_width = width;
-            state.window_height = height;
-            state.screen_aspect_ratio = static_cast<float>(state.window_width) / static_cast<float>(state.window_height);
-
-            Modeye::Log::info("Framebuffer resized to: {}x{} | Aspect Ratio: {:.3f}", width, height, state.screen_aspect_ratio);
-        });
-
-    glfwSetKeyCallback(window,
-        [](GLFWwindow* window, int key, int scancode, int action, int mods)
+    Modeye::Gfx::Window window(720, 480, "Modeye");
+    window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    window.setKeyCallback([](GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             if (action == GLFW_PRESS)
             {
@@ -194,15 +129,11 @@ static GLFWwindow* loadGfx()
                 }
                 else if (key == GLFW_KEY_R)
                 {
-                    Modeye::Gfx::Shader* shader = reinterpret_cast<Modeye::Gfx::Shader*>(glfwGetWindowUserPointer(window));
-                    shader->reload();
+                    // TODO: implement
                 }
             }
         });
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window,
-        [](GLFWwindow* window, double xposIn, double yposIn)
+    window.setCursorPosCallback([](GLFWwindow* window, double xposIn, double yposIn)
         {
             float xpos = static_cast<float>(xposIn);
             float ypos = static_cast<float>(yposIn);
@@ -222,21 +153,11 @@ static GLFWwindow* loadGfx()
 
             state.camera.processMouseMovement(xoffset, yoffset);
         });
-    
-    glfwSetScrollCallback(window,
-        [](GLFWwindow* window, double xoffset, double yoffset)
+    window.setScrollCallback([](GLFWwindow* window, double xoffset, double yoffset)
         {
             state.camera.processMouseScroll(static_cast<float>(yoffset));
         });
 
-    return window;
-}
-
-int main(int argc, char** argv)
-{
-    Modeye::Log::init();
-
-    GLFWwindow* window = loadGfx();
 
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
@@ -252,11 +173,9 @@ int main(int argc, char** argv)
     }
 
     Modeye::Gfx::Mesh monkeyMesh(newVertices);
-
     Modeye::Gfx::Shader shader("triangle.vert", "triangle.frag");
-    glfwSetWindowUserPointer(window, &shader);
 
-    while (!glfwWindowShouldClose(window))
+    while (!window.shouldClose())
     {
         state.timer.startFrame();
 
@@ -267,45 +186,43 @@ int main(int argc, char** argv)
 
         const float dt = state.timer.deltaTime();
 
-        if (glfwGetKey(window, GLFW_KEY_W))
+        if (window.getKey(GLFW_KEY_W))
         {
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Forward, dt);
         }
-        else if (glfwGetKey(window, GLFW_KEY_S))
+        else if (window.getKey(GLFW_KEY_S))
         {
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Backward, dt);
         }
-        if (glfwGetKey(window, GLFW_KEY_D))
+        if (window.getKey(GLFW_KEY_D))
         {
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Right, dt);
         }
-        else if (glfwGetKey(window, GLFW_KEY_A))
+        else if (window.getKey(GLFW_KEY_A))
         {
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Left, dt);
         }
-        if (glfwGetKey(window, GLFW_KEY_SPACE))
+        if (window.getKey(GLFW_KEY_SPACE))
         {
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Up, dt);
         }
-        else if (glfwGetKey(window, GLFW_KEY_C))
+        else if (window.getKey(GLFW_KEY_C))
         {
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Down, dt);
         }
 
-        shader.use();
-
         shader.setMat4("u_projection", state.camera.getProjectionMat(state.screen_aspect_ratio));
         shader.setMat4("u_model", state.camera.getViewMat());
         shader.setMat4("u_view", glm::mat4(1.0f));
+        shader.use();
 
         monkeyMesh.draw(GL_TRIANGLES);
 
-        glfwPollEvents();
-        glfwSwapBuffers(window);
+        window.pollEvents();
+        window.swapBuffers();
 
         state.timer.endFrame();
     }
 
-    glfwTerminate();
     return 0;
 }

@@ -5,3 +5,4 @@
 #include "Gfx/Vertex.hpp"
 #include "Gfx/VertexArray.hpp"
 #include "Gfx/VertexBuffer.hpp"
+#include "Gfx/Window.hpp"
