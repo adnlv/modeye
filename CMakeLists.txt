@@ -48,11 +48,11 @@ add_executable(modeye
     "src/main.cpp" 
     "src/core/Log.cpp"
     "src/core/Timer.cpp"
-    "src/core/gfx/Camera.cpp"
-    "src/core/gfx/Mesh.cpp"
-    "src/core/gfx/Shader.cpp"
-    "src/core/gfx/VertexArray.cpp"
-    "src/core/gfx/VertexBuffer.cpp"
+    "src/Core/Gfx/Camera.cpp"
+    "src/Core/Gfx/Mesh.cpp"
+    "src/Core/Gfx/Shader.cpp"
+    "src/Core/Gfx/VertexArray.cpp"
+    "src/Core/Gfx/VertexBuffer.cpp"
 )
 
 set_property(TARGET modeye PROPERTY CXX_STANDARD 17)

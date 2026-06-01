@@ -1,7 +1,7 @@
 #pragma once
-#include "gfx/Camera.hpp"
-#include "gfx/Mesh.hpp"
-#include "gfx/Shader.hpp"
-#include "gfx/Vertex.hpp"
-#include "gfx/VertexArray.hpp"
-#include "gfx/VertexBuffer.hpp"
+#include "Gfx/Camera.hpp"
+#include "Gfx/Mesh.hpp"
+#include "Gfx/Shader.hpp"
+#include "Gfx/Vertex.hpp"
+#include "Gfx/VertexArray.hpp"
+#include "Gfx/VertexBuffer.hpp"
