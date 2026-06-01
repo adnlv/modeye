@@ -1,39 +1,39 @@
-#include "Log.hpp"
-#include "Timer.hpp"
+#include "log.hpp"
+#include "timer.hpp"
 #include <GLFW/glfw3.h>
 
-Timer::Timer(double targetFPS)
+modeye::timer::timer(float target_fps)
 {
-    if (targetFPS == 0)
+    if (target_fps == 0)
     {
         return;
     }
 
-    m_targetFPS = targetFPS;
-    m_targetFrameTime = 1 / m_targetFPS;
+    m_targetFPS = target_fps;
+    m_targetFrameTime = 1 / target_fps;
 }
 
-double Timer::time() const
+float modeye::timer::time() const
 {
-    return m_frameStart;
+    return static_cast<float>(m_frameStart);
 }
 
-double Timer::deltaTime() const
+float modeye::timer::delta_time() const
 {
-    return m_deltaTime;
+    return static_cast<float>(m_deltaTime);
 }
 
-int Timer::fps() const
+int modeye::timer::fps() const
 {
     return m_currentFPS;
 }
 
-void Timer::startFrame()
+void modeye::timer::startFrame()
 {
     m_frameStart = glfwGetTime();
 }
 
-void Timer::endFrame()
+void modeye::timer::endFrame()
 {
     const double frameTime = glfwGetTime() - m_frameStart;
 
@@ -56,7 +56,6 @@ void Timer::endFrame()
         m_frameCount = 0;
         m_fpsTimer = 0;
 
-        Log::debug("framesPerSecond {:>5} | deltaTime {:.7f}", m_currentFPS, m_deltaTime);
+        modeye::log::debug("framesPerSecond {:>5} | deltaTime {:.7f}", m_currentFPS, m_deltaTime);
     }
 }
-

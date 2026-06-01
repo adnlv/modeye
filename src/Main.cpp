@@ -4,17 +4,15 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "Camera.hpp"
-#include "Log.hpp"
-#include "Mesh.hpp"
-#include "Shader.hpp"
-#include "Timer.hpp"
+#include "core/gfx.hpp"
+#include "core/log.hpp"
+#include "core/timer.hpp"
 #include <cassert>
 
 struct State
 {
-    Timer timer;
-    Camera camera;
+    modeye::timer timer;
+    modeye::gfx::camera camera;
 
     bool first_mouse = true;
     float last_x = 720.0f / 2.0f;
@@ -112,16 +110,16 @@ void loadOBJ(
         out_normals.push_back(n);
     }
 
-    Log::info("Loaded {} vertices from '{}'", out_vertices.size(), path);
+    modeye::log::info("Loaded {} vertices from '{}'", out_vertices.size(), path);
 }
 
 static void printSystemInfo()
 {
-    Log::info("OpenGL context created:");
-    Log::info("  GPU vendor:   {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
-    Log::info("  GPU renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-    Log::info("  GL version:   {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-    Log::info("  GLSL version: {}", reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+    modeye::log::info("OpenGL context created:");
+    modeye::log::info("  GPU vendor:   {}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+    modeye::log::info("  GPU renderer: {}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+    modeye::log::info("  GL version:   {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+    modeye::log::info("  GLSL version: {}", reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
 
     GLint maxTextureSize = 0;
     GLint maxMsaaSamples = 0;
@@ -131,16 +129,16 @@ static void printSystemInfo()
     glGetIntegerv(GL_MAX_SAMPLES, &maxMsaaSamples);
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs);
 
-    Log::info("GPU hardware capability limits:");
-    Log::info("  Max 2D texture size:   {}x{}", maxTextureSize, maxTextureSize);
-    Log::info("  Max MSAA samples:      {}x", maxMsaaSamples);
-    Log::info("  Max vertex attributes: {}", maxVertexAttribs);
+    modeye::log::info("GPU hardware capability limits:");
+    modeye::log::info("  Max 2D texture size:   {}x{}", maxTextureSize, maxTextureSize);
+    modeye::log::info("  Max MSAA samples:      {}x", maxMsaaSamples);
+    modeye::log::info("  Max vertex attributes: {}", maxVertexAttribs);
 
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
     if (primaryMonitor)
     {
         const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-        Log::info("Primary monitor detected: {}x{} @ {}Hz", mode->width, mode->height, mode->refreshRate);
+        modeye::log::info("Primary monitor detected: {}x{} @ {}Hz", mode->width, mode->height, mode->refreshRate);
     }
 }
 
@@ -149,7 +147,7 @@ static GLFWwindow* loadGfx()
     glfwSetErrorCallback(
         [](int error_code, const char* description)
         {
-            Log::error("GLFW ({}) >> {}", error_code, description);
+            modeye::log::error("GLFW ({}) >> {}", error_code, description);
         });
 
     assert(glfwInit());
@@ -182,7 +180,7 @@ static GLFWwindow* loadGfx()
             state.window_height = height;
             state.screen_aspect_ratio = static_cast<float>(state.window_width) / static_cast<float>(state.window_height);
 
-            Log::info("Framebuffer resized to: {}x{} | Aspect Ratio: {:.3f}", width, height, state.screen_aspect_ratio);
+            modeye::log::info("Framebuffer resized to: {}x{} | Aspect Ratio: {:.3f}", width, height, state.screen_aspect_ratio);
         });
 
     glfwSetKeyCallback(window,
@@ -196,7 +194,7 @@ static GLFWwindow* loadGfx()
                 }
                 else if (key == GLFW_KEY_R)
                 {
-                    Shader* shader = reinterpret_cast<Shader*>(glfwGetWindowUserPointer(window));
+                    modeye::gfx::shader* shader = reinterpret_cast<modeye::gfx::shader*>(glfwGetWindowUserPointer(window));
                     shader->reload();
                 }
             }
@@ -222,13 +220,13 @@ static GLFWwindow* loadGfx()
             state.last_x = xpos;
             state.last_y = ypos;
 
-            state.camera.processMouseMovement(xoffset, yoffset);
+            state.camera.process_mouse_movement(xoffset, yoffset);
         });
     
     glfwSetScrollCallback(window,
         [](GLFWwindow* window, double xoffset, double yoffset)
         {
-            state.camera.processMouseScroll(static_cast<float>(yoffset));
+            state.camera.process_mouse_scroll(static_cast<float>(yoffset));
         });
 
     return window;
@@ -236,7 +234,7 @@ static GLFWwindow* loadGfx()
 
 int main(int argc, char** argv)
 {
-    Log::init();
+    modeye::log::init();
 
     GLFWwindow* window = loadGfx();
 
@@ -245,7 +243,7 @@ int main(int argc, char** argv)
     std::vector<glm::vec3> normals;
     loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
 
-    std::vector<Vertex> newVertices(vertices.size());
+    std::vector<modeye::gfx::vertex> newVertices(vertices.size());
     for (size_t i = 0; i < vertices.size(); i++)
     {
         newVertices.at(i).position = vertices.at(i);
@@ -253,9 +251,9 @@ int main(int argc, char** argv)
         newVertices.at(i).uv = uvs.at(i);
     }
 
-    Mesh monkeyMesh(newVertices);
+    modeye::gfx::mesh monkeyMesh(newVertices);
 
-    Shader shader("triangle.vert", "triangle.frag");
+    modeye::gfx::shader shader("triangle.vert", "triangle.frag");
     glfwSetWindowUserPointer(window, &shader);
 
     while (!glfwWindowShouldClose(window))
@@ -267,42 +265,38 @@ int main(int argc, char** argv)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const float dt = static_cast<float>(state.timer.deltaTime());
+        const float dt = state.timer.delta_time();
 
         if (glfwGetKey(window, GLFW_KEY_W))
         {
-            state.camera.processKeyboard(Camera::Direction::FORWARD, dt);
+            state.camera.process_keyboard(modeye::gfx::camera::FORWARD, dt);
         }
         else if (glfwGetKey(window, GLFW_KEY_S))
         {
-            state.camera.processKeyboard(Camera::Direction::BACKWARD, dt);
+            state.camera.process_keyboard(modeye::gfx::camera::BACKWARD, dt);
         }
         if (glfwGetKey(window, GLFW_KEY_D))
         {
-            state.camera.processKeyboard(Camera::Direction::RIGHT, dt);
+            state.camera.process_keyboard(modeye::gfx::camera::RIGHT, dt);
         }
         else if (glfwGetKey(window, GLFW_KEY_A))
         {
-            state.camera.processKeyboard(Camera::Direction::LEFT, dt);
+            state.camera.process_keyboard(modeye::gfx::camera::LEFT, dt);
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE))
         {
-            state.camera.processKeyboard(Camera::Direction::UP, dt);
+            state.camera.process_keyboard(modeye::gfx::camera::UP, dt);
         }
         else if (glfwGetKey(window, GLFW_KEY_C))
         {
-            state.camera.processKeyboard(Camera::Direction::DOWN, dt);
+            state.camera.process_keyboard(modeye::gfx::camera::DOWN, dt);
         }
 
         shader.use();
 
-        const glm::mat4 projection = state.camera.getProjectionMatrix(state.screen_aspect_ratio);
-        const glm::mat4 view = state.camera.getViewMatrix();
-        const glm::mat4 model = glm::mat4(1.0f);
-
-        shader.setMat4("u_projection", projection);
-        shader.setMat4("u_model", model);
-        shader.setMat4("u_view", view);
+        shader.set_mat4("u_projection", state.camera.get_projection_mat(state.screen_aspect_ratio));
+        shader.set_mat4("u_model", state.camera.get_view_mat());
+        shader.set_mat4("u_view", glm::mat4(1.0f));
 
         monkeyMesh.draw(GL_TRIANGLES);
 

@@ -1,9 +1,9 @@
-#include "Log.hpp"
+#include "log.hpp"
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-std::shared_ptr<spdlog::logger> Log::s_logger;
+std::shared_ptr<spdlog::logger> modeye::log::s_logger;
 
-void Log::init()
+void modeye::log::init()
 {
     // %^   -> Start color region (for level)
     // [%T] -> Time (HH:MM:SS)
@@ -17,7 +17,7 @@ void Log::init()
     s_logger->set_level(spdlog::level::trace);
 }
 
-const std::shared_ptr<spdlog::logger>& Log::logger()
+const std::shared_ptr<spdlog::logger>& modeye::log::logger()
 {
-    return Log::s_logger;
+    return modeye::log::s_logger;
 }
