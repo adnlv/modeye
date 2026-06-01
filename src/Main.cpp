@@ -111,6 +111,8 @@ void loadOBJ(
         glm::vec3 n = temp_normals[n_idx - 1];
         out_normals.push_back(n);
     }
+
+    Log::info("Loaded {} vertices from '{}'", out_vertices.size(), path);
 }
 
 static void printSystemInfo()
