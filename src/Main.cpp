@@ -4,9 +4,9 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "core/Gfx.hpp"
-#include "core/Log.hpp"
-#include "core/Timer.hpp"
+#include "Core/Gfx.hpp"
+#include "Core/Log.hpp"
+#include "Core/Timer.hpp"
 #include <cassert>
 
 struct State
