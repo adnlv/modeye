@@ -114,6 +114,38 @@ void Modeye::Gfx::Window::printSystemInfo()
     }
 }
 
+Modeye::Gfx::Window::Window(Window&& other) noexcept
+    : m_glfwWindow(other.m_glfwWindow),
+    m_glfwMonitor(other.m_glfwMonitor),
+    m_frameBufferWidth(other.m_frameBufferWidth),
+    m_frameBufferHeight(other.m_frameBufferHeight),
+    m_aspectRatio(other.m_aspectRatio)
+{
+    other.m_glfwWindow = nullptr;
+    other.m_glfwMonitor = nullptr;
+}
+
+Modeye::Gfx::Window& Modeye::Gfx::Window::operator=(Window&& other) noexcept
+{
+    if (this != &other)
+    {
+        if (m_glfwWindow)
+        {
+            glfwDestroyWindow(m_glfwWindow);
+        }
+
+        m_glfwWindow = other.m_glfwWindow;
+        m_glfwMonitor = other.m_glfwMonitor;
+        m_frameBufferWidth = other.m_frameBufferWidth;
+        m_frameBufferHeight = other.m_frameBufferHeight;
+        m_aspectRatio = other.m_aspectRatio;
+
+        other.m_glfwWindow = nullptr;
+        other.m_glfwMonitor = nullptr;
+    }
+    return *this;
+}
+
 GLFWwindow* Modeye::Gfx::Window::glfwWindow() const
 {
     return m_glfwWindow;

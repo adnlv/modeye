@@ -18,8 +18,8 @@ namespace Modeye::Gfx
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
 
-        Window(Window&& other) noexcept = default;
-        Window& operator=(Window&& other) noexcept = default;
+        Window(Window&& other) noexcept;
+        Window& operator=(Window&& other) noexcept;
 
         GLFWwindow* glfwWindow() const;
         GLFWmonitor* glfwMonitor() const;

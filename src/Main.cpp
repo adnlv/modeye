@@ -158,7 +158,6 @@ int main(int argc, char** argv)
             state.camera.processMouseScroll(static_cast<float>(yoffset));
         });
 
-
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> normals;
