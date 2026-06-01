@@ -46,8 +46,8 @@ FetchContent_MakeAvailable(spdlog)
 
 add_executable(modeye 
     "src/main.cpp" 
-    "src/core/Log.cpp"
-    "src/core/Timer.cpp"
+    "src/Core/Log.cpp"
+    "src/Core/Timer.cpp"
     "src/Core/Gfx/Camera.cpp"
     "src/Core/Gfx/Mesh.cpp"
     "src/Core/Gfx/Shader.cpp"
