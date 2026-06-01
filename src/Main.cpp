@@ -142,10 +142,8 @@ static void printSystemInfo()
     }
 }
 
-int main(int argc, char** argv)
+static GLFWwindow* loadGfx()
 {
-    Log::init();
-
     glfwSetErrorCallback(
         [](int error_code, const char* description)
         {
@@ -168,11 +166,11 @@ int main(int argc, char** argv)
 
     assert(gladLoadGL(glfwGetProcAddress) != 0);
 
-    printSystemInfo();
-
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
+
+    printSystemInfo();
 
     glfwSetFramebufferSizeCallback(window,
         [](GLFWwindow* window, int width, int height)
@@ -181,27 +179,9 @@ int main(int argc, char** argv)
             state.window_width = width;
             state.window_height = height;
             state.screen_aspect_ratio = static_cast<float>(state.window_width) / static_cast<float>(state.window_height);
-            
+
             Log::info("Framebuffer resized to: {}x{} | Aspect Ratio: {:.3f}", width, height, state.screen_aspect_ratio);
         });
-
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
-    loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
-
-    std::vector<Vertex> newVertices(vertices.size());
-    for (size_t i = 0; i < vertices.size(); i++)
-    {
-        newVertices.at(i).position = vertices.at(i);
-        newVertices.at(i).normal = normals.at(i);
-        newVertices.at(i).uv = uvs.at(i);
-    }
-
-    Mesh monkeyMesh(newVertices);
-
-    Shader shader("triangle.vert", "triangle.frag");
-    glfwSetWindowUserPointer(window, &shader);
 
     glfwSetKeyCallback(window,
         [](GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -242,11 +222,39 @@ int main(int argc, char** argv)
 
             state.camera.processMouseMovement(xoffset, yoffset);
         });
+    
     glfwSetScrollCallback(window,
         [](GLFWwindow* window, double xoffset, double yoffset)
         {
             state.camera.processMouseScroll(static_cast<float>(yoffset));
         });
+
+    return window;
+}
+
+int main(int argc, char** argv)
+{
+    Log::init();
+
+    GLFWwindow* window = loadGfx();
+
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
+    loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
+
+    std::vector<Vertex> newVertices(vertices.size());
+    for (size_t i = 0; i < vertices.size(); i++)
+    {
+        newVertices.at(i).position = vertices.at(i);
+        newVertices.at(i).normal = normals.at(i);
+        newVertices.at(i).uv = uvs.at(i);
+    }
+
+    Mesh monkeyMesh(newVertices);
+
+    Shader shader("triangle.vert", "triangle.frag");
+    glfwSetWindowUserPointer(window, &shader);
 
     while (!glfwWindowShouldClose(window))
     {
