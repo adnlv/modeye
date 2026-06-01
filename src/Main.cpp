@@ -1,15 +1,15 @@
+#define GLAD_GL_IMPLEMENTATION
+#include <glad/gl.h>
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include "Camera.hpp"
 #include "Log.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
 #include "Timer.hpp"
 #include <cassert>
-
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/gl.h>
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 
 struct State
 {
