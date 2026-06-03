@@ -4,8 +4,7 @@
 
 Modeye::Timer::Timer(float targetFps)
 {
-    if (targetFps == 0)
-    {
+    if (targetFps == 0) {
         return;
     }
 
@@ -37,11 +36,9 @@ void Modeye::Timer::endFrame()
 {
     const double frameTime = glfwGetTime() - m_frameStart;
 
-    if (m_targetFrameTime > 0 && frameTime < m_targetFrameTime)
-    {
+    if (m_targetFrameTime > 0 && frameTime < m_targetFrameTime) {
         // Busy-wait for the remaining precise milliseconds
-        while (glfwGetTime() - m_frameStart < m_targetFrameTime)
-        {
+        while (glfwGetTime() - m_frameStart < m_targetFrameTime) {
         }
     }
 
@@ -50,8 +47,7 @@ void Modeye::Timer::endFrame()
     m_frameCount++;
     m_fpsTimer += m_deltaTime;
 
-    if (m_fpsTimer >= 1)
-    {
+    if (m_fpsTimer >= 1) {
         m_currentFps = m_frameCount;
         m_frameCount = 0;
         m_fpsTimer = 0;

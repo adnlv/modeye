@@ -4,26 +4,28 @@
 
 namespace Modeye::Gfx
 {
-    class Mesh
-    {
-    public:
-        Mesh(const std::vector<Modeye::Gfx::Vertex>& vertices);
-        ~Mesh() = default;
 
-        Mesh(const Mesh&) = delete;
-        Mesh& operator=(const Mesh&) = delete;
+class Mesh
+{
+public:
+    Mesh(const std::vector<Modeye::Gfx::Vertex>& vertices);
+    ~Mesh() = default;
 
-        Mesh(Mesh&&) noexcept = default;
-        Mesh& operator=(Mesh&&) noexcept = default;
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
 
-        void draw(GLenum mode) const;
+    Mesh(Mesh&&) noexcept = default;
+    Mesh& operator=(Mesh&&) noexcept = default;
 
-        const Modeye::Gfx::VertexArray& vertexArray() const;
-        const Modeye::Gfx::VertexBuffer& vertexBuffer() const;
+    void draw(GLenum mode) const;
 
-    private:
-        VertexArray m_vertexArray;
-        VertexBuffer m_vertexBuffer;
-        GLsizei m_vertexCount;
-    };
+    const Modeye::Gfx::VertexArray& vertexArray() const;
+    const Modeye::Gfx::VertexBuffer& vertexBuffer() const;
+
+private:
+    VertexArray m_vertexArray;
+    VertexBuffer m_vertexBuffer;
+    GLsizei m_vertexCount;
+};
+
 }

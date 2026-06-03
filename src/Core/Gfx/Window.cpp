@@ -9,8 +9,7 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
 {
     glfwSetErrorCallback(glfwErrorCallback);
 
-    if (!glfwInit())
-    {
+    if (!glfwInit()) {
         Modeye::Log::error("GLFW initialization failed");
         std::abort();
     }
@@ -27,8 +26,7 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
         title.c_str(),
         monitor,
         nullptr);
-    if (m_glfwWindow == nullptr)
-    {
+    if (m_glfwWindow == nullptr) {
         Modeye::Log::error("GLFW window creation failed");
         std::abort();
     }
@@ -37,8 +35,7 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
 
     glfwMakeContextCurrent(m_glfwWindow);
 
-    if (!gladLoadGL(glfwGetProcAddress))
-    {
+    if (!gladLoadGL(glfwGetProcAddress)) {
         Modeye::Log::error("GLAD failed to load OpenGL");
         std::abort();
     }
@@ -55,8 +52,7 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
 
 Modeye::Gfx::Window::~Window()
 {
-    if (m_glfwWindow != nullptr)
-    {
+    if (m_glfwWindow != nullptr) {
         Modeye::Log::trace("Destroyed GLFW window");
 
         glfwDestroyWindow(m_glfwWindow);
@@ -72,8 +68,7 @@ void Modeye::Gfx::Window::glfwErrorCallback(int errorCode, const char* descripti
 void Modeye::Gfx::Window::glfwFramebufferSizeCallback(GLFWwindow* glfwWindow, int width, int height)
 {
     auto window = static_cast<Modeye::Gfx::Window*>(glfwGetWindowUserPointer(glfwWindow));
-    if (window == nullptr)
-    {
+    if (window == nullptr) {
         return;
     }
 
@@ -107,8 +102,7 @@ void Modeye::Gfx::Window::printSystemInfo()
     Modeye::Log::info("  Max vertex attributes: {}", maxVertexAttribs);
 
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-    if (primaryMonitor)
-    {
+    if (primaryMonitor) {
         const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
         Modeye::Log::info("Primary monitor detected: {}x{} @ {}Hz", mode->width, mode->height, mode->refreshRate);
     }
@@ -127,10 +121,8 @@ Modeye::Gfx::Window::Window(Window&& other) noexcept
 
 Modeye::Gfx::Window& Modeye::Gfx::Window::operator=(Window&& other) noexcept
 {
-    if (this != &other)
-    {
-        if (m_glfwWindow)
-        {
+    if (this != &other) {
+        if (m_glfwWindow) {
             glfwDestroyWindow(m_glfwWindow);
         }
 

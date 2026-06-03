@@ -22,8 +22,7 @@ void Modeye::Gfx::Camera::processKeyboard(Modeye::Gfx::Camera::Direction directi
 {
     const float velocity = m_speed * deltaTime;
 
-    switch (direction)
-    {
+    switch (direction) {
     case Modeye::Gfx::Camera::Direction::Forward:
         m_position += m_front * velocity;
         break;
@@ -52,12 +51,9 @@ void Modeye::Gfx::Camera::processMouseMovement(float xOffset, float yOffset)
     m_yaw -= xOffset * m_sensivity;
     m_pitch += yOffset * m_sensivity;
 
-    if (m_pitch > 89.0f)
-    {
+    if (m_pitch > 89.0f) {
         m_pitch = 89.0f;
-    }
-    else if (m_pitch < -89.0f)
-    {
+    } else if (m_pitch < -89.0f) {
         m_pitch = -89.0f;
     }
 
@@ -68,16 +64,11 @@ void Modeye::Gfx::Camera::processMouseScroll(float yOffset)
 {
     m_fov -= yOffset;
 
-    if (m_fov > 45.0f)
-    {
+    if (m_fov > 45.0f) {
         m_fov = 45.0f;
-    }
-    else if (m_fov < 1.0f)
-    {
+    } else if (m_fov < 1.0f) {
         m_fov = 1.0f;
-    }
-    else
-    {
+    } else {
         Modeye::Log::info("Camera FOV changed to: {:.1f} deg (Zoom factor: {:.1f}x)", m_fov, 45.0f / m_fov);
     }
 }

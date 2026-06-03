@@ -13,8 +13,7 @@ Modeye::Gfx::VertexBuffer::VertexBuffer(size_t size, const void* data, GLenum us
 
 Modeye::Gfx::VertexBuffer::~VertexBuffer()
 {
-    if (m_id != 0)
-    {
+    if (m_id != 0) {
         Modeye::Log::trace("Deleted vertex buffer (ID: {})", m_id);
 
         glDeleteBuffers(1, &m_id);
@@ -29,10 +28,8 @@ Modeye::Gfx::VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
 
 Modeye::Gfx::VertexBuffer& Modeye::Gfx::VertexBuffer::operator=(VertexBuffer&& other) noexcept
 {
-    if (this != &other)
-    {
-        if (m_id != 0)
-        {
+    if (this != &other) {
+        if (m_id != 0) {
             glDeleteBuffers(1, &m_id);
         }
 

@@ -4,33 +4,35 @@
 
 namespace Modeye::Gfx
 {
-    class VertexArray
-    {
-    public:
-        VertexArray();
-        ~VertexArray();
 
-        VertexArray(const VertexArray&) = delete;
-        VertexArray& operator=(const VertexArray&) = delete;
+class VertexArray
+{
+public:
+    VertexArray();
+    ~VertexArray();
 
-        VertexArray(VertexArray&& other) noexcept;
-        VertexArray& operator=(VertexArray&& other) noexcept;
+    VertexArray(const VertexArray&) = delete;
+    VertexArray& operator=(const VertexArray&) = delete;
 
-        static void unbind();
+    VertexArray(VertexArray&& other) noexcept;
+    VertexArray& operator=(VertexArray&& other) noexcept;
 
-        void bind() const;
-        void linkAttrib(
-            const VertexBuffer& vbo,
-            GLuint layout,
-            GLuint num_components,
-            GLenum type,
-            GLsizei stride,
-            const void* offset
-        ) const;
+    static void unbind();
 
-        GLuint id() const;
+    void bind() const;
+    void linkAttrib(
+        const VertexBuffer& vbo,
+        GLuint layout,
+        GLuint num_components,
+        GLenum type,
+        GLsizei stride,
+        const void* offset
+    ) const;
 
-    private:
-        GLuint m_id;
-    };
+    GLuint id() const;
+
+private:
+    GLuint m_id;
+};
+
 }

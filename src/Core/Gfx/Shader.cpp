@@ -54,8 +54,7 @@ void Modeye::Gfx::Shader::reload()
     vertShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fragShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-    try
-    {
+    try {
         vertShaderFile.open(m_vertShaderFsPath);
         fragShaderFile.open(m_fragShaderFsPath);
 
@@ -70,9 +69,7 @@ void Modeye::Gfx::Shader::reload()
 
         vertShaderSrc = vertShaderStream.str();
         fragShaderSrc = fragShaderStream.str();
-    }
-    catch (const std::exception& e)
-    {
+    } catch (const std::exception& e) {
         Modeye::Log::error("Failed to open shader file: {}", e.what());
         std::abort();
     }
@@ -85,8 +82,7 @@ void Modeye::Gfx::Shader::reload()
     int success;
     char infoLog[512];
     glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
+    if (!success) {
         glGetShaderInfoLog(vertShader, sizeof(infoLog), nullptr, infoLog);
         Modeye::Log::error("Vertex shader compilation failed: {}", infoLog);
         std::abort();
@@ -98,8 +94,7 @@ void Modeye::Gfx::Shader::reload()
     glCompileShader(fragShader);
 
     glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
+    if (!success) {
         glGetShaderInfoLog(fragShader, sizeof(infoLog), nullptr, infoLog);
         Modeye::Log::error("Fragment shader compilation failed: {}", infoLog);
         std::abort();
@@ -111,8 +106,7 @@ void Modeye::Gfx::Shader::reload()
     glLinkProgram(program);
 
     glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success)
-    {
+    if (!success) {
         glGetProgramInfoLog(program, sizeof(infoLog), nullptr, infoLog);
         Modeye::Log::error("Shader program linkage failed: {}", infoLog);
         std::abort();
@@ -124,8 +118,7 @@ void Modeye::Gfx::Shader::reload()
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
 
-    if (m_id != 0)
-    {
+    if (m_id != 0) {
         glDeleteProgram(m_id);
     }
 

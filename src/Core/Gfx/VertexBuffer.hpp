@@ -3,25 +3,27 @@
 
 namespace Modeye::Gfx
 {
-    class VertexBuffer
-    {
-    public:
-        VertexBuffer(size_t size, const void* data, GLenum usage);
-        ~VertexBuffer();
 
-        VertexBuffer(const VertexBuffer&) = delete;
-        VertexBuffer& operator=(const VertexBuffer&) = delete;
+class VertexBuffer
+{
+public:
+    VertexBuffer(size_t size, const void* data, GLenum usage);
+    ~VertexBuffer();
 
-        VertexBuffer(VertexBuffer&& other) noexcept;
-        VertexBuffer& operator=(VertexBuffer&& other) noexcept;
+    VertexBuffer(const VertexBuffer&) = delete;
+    VertexBuffer& operator=(const VertexBuffer&) = delete;
 
-        static void unbind();
+    VertexBuffer(VertexBuffer&& other) noexcept;
+    VertexBuffer& operator=(VertexBuffer&& other) noexcept;
 
-        void bind() const;
+    static void unbind();
 
-        GLuint id() const;
+    void bind() const;
 
-    private:
-        GLuint m_id;
-    };
+    GLuint id() const;
+
+private:
+    GLuint m_id;
+};
+
 }

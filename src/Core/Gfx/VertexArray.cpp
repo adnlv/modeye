@@ -12,8 +12,7 @@ Modeye::Gfx::VertexArray::VertexArray()
 
 Modeye::Gfx::VertexArray::~VertexArray()
 {
-    if (m_id != 0)
-    {
+    if (m_id != 0) {
         Modeye::Log::trace("Deleted vertex array (ID: {})", m_id);
 
         glDeleteVertexArrays(1, &m_id);
@@ -28,10 +27,8 @@ Modeye::Gfx::VertexArray::VertexArray(VertexArray&& other) noexcept
 
 Modeye::Gfx::VertexArray& Modeye::Gfx::VertexArray::operator=(VertexArray&& other) noexcept
 {
-    if (this != &other)
-    {
-        if (m_id != 0)
-        {
+    if (this != &other) {
+        if (m_id != 0) {
             glDeleteVertexArrays(1, &m_id);
         }
 
