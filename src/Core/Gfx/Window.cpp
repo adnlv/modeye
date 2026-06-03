@@ -72,7 +72,7 @@ static void _glDebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum
         break;
     }
 
-    Modeye::Log::warn("{} ({}) from {} ({}): {}", type_str, severity_str, source_str, id, message);
+    Modeye::Log::debug("OpenGL sent {} severity {} from {} ({}): {}", severity_str, type_str, source_str, id, message);
 }
 
 Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLFWmonitor* monitor)
