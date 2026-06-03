@@ -24,22 +24,26 @@ void Modeye::Gfx::Camera::processKeyboard(Modeye::Gfx::Camera::Direction directi
 
     switch (direction) {
     case Modeye::Gfx::Camera::Direction::Forward:
-        m_position += m_front * velocity;
+        m_position.x += m_front.x * velocity;
+        m_position.z += m_front.z * velocity;
         break;
     case Modeye::Gfx::Camera::Direction::Backward:
-        m_position -= m_front * velocity;
+        m_position.x -= m_front.x * velocity;
+        m_position.z -= m_front.z * velocity;
         break;
     case Modeye::Gfx::Camera::Direction::Right:
-        m_position += m_right * velocity;
+        m_position.x += m_right.x * velocity;
+        m_position.z += m_right.z * velocity;
         break;
     case Modeye::Gfx::Camera::Direction::Left:
-        m_position -= m_right * velocity;
+        m_position.x -= m_right.x * velocity;
+        m_position.z -= m_right.z * velocity;
         break;
     case Modeye::Gfx::Camera::Direction::Up:
-        m_position += m_up * velocity;
+        m_position.y += m_up.y * velocity;
         break;
     case Modeye::Gfx::Camera::Direction::Down:
-        m_position -= m_up * velocity;
+        m_position.y -= m_up.y * velocity;
         break;
     default:
         break;
