@@ -2,6 +2,8 @@
 #include "Core/Log.hpp"
 #include "Core/Timer.hpp"
 #include <cassert>
+#include <fstream>
+#include <sstream>
 
 struct State
 {
@@ -13,82 +15,93 @@ struct State
     float last_y = 480.0f / 2.0f;
 } state;
 
-void loadOBJ(
-    const std::string& path,
-    std::vector<glm::vec3>& out_vertices,
-    std::vector<glm::vec2>& out_uvs,
-    std::vector<glm::vec3>& out_normals)
+static auto loadObj(const std::filesystem::path& path) -> std::vector<Modeye::Gfx::Vertex>
 {
-    std::vector<GLuint> vertex_idxs, uv_idxs, normal_idxs;
-    std::vector<glm::vec3> temp_vertices, temp_normals;
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open OBJ file: " + path.string());
+    }
+
+    std::vector<glm::vec3> temp_vertices;
+    std::vector<glm::vec3> temp_normals;
     std::vector<glm::vec2> temp_uvs;
 
-    FILE* file = fopen(path.c_str(), "r");
-    assert(file != nullptr);
+    struct FaceIndex
+    {
+        GLuint v = 0;
+        GLuint vt = 0;
+        GLuint vn = 0;
+    };
 
-    while (true) {
-        char header[128];
-        int res = fscanf(file, "%s", header);
-        if (res == EOF) {
-            break;
+    std::vector<FaceIndex> face_indices;
+    std::string line;
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string prefix;
+        ss >> prefix;
+
+        if (prefix == "v") {
+            glm::vec3 v;
+            if (ss >> v.x >> v.y >> v.z) {
+                temp_vertices.push_back(v);
+            }
+        } else if (prefix == "vt") {
+            glm::vec2 uv;
+            if (ss >> uv.x >> uv.y) {
+                temp_uvs.push_back(uv);
+            }
+        } else if (prefix == "vn") {
+            glm::vec3 n;
+            if (ss >> n.x >> n.y >> n.z) {
+                temp_normals.push_back(n);
+            }
+        } else if (prefix == "f") {
+            FaceIndex f[3];
+            char slash;
+            bool parse_success = true;
+
+            // Parsers the standard format: v/vt/vn v/vt/vn v/vt/vn
+            for (int i = 0; i < 3; ++i) {
+                if (!(ss >> f[i].v >> slash >> f[i].vt >> slash >> f[i].vn)) {
+                    parse_success = false;
+                    break;
+                }
+            }
+            if (parse_success) {
+                face_indices.push_back(f[0]);
+                face_indices.push_back(f[1]);
+                face_indices.push_back(f[2]);
+            } else {
+                Modeye::Log::warn("Skipped malformed face line: '{}'", line);
+            }
+        }
+    }
+
+    std::vector<Modeye::Gfx::Vertex> vertices;
+    vertices.reserve(face_indices.size());
+
+    for (const auto& idx : face_indices) {
+        Modeye::Gfx::Vertex vertex{};
+        // OBJ indices are 1-based; bounds checks are applied to prevent segfaults
+
+        if (idx.v > 0 && static_cast<size_t>(idx.v) <= temp_vertices.size()) {
+            vertex.position = temp_vertices[idx.v - 1];
         }
 
-        if (strcmp(header, "v") == 0) {
-            glm::vec3 v{};
-            (void)fscanf(file, "%f %f %f\n", &v.x, &v.y, &v.z);
-            temp_vertices.push_back(v);
-        } else if (strcmp(header, "vt") == 0) {
-            glm::vec2 uv{};
-            (void)fscanf(file, "%f %f\n", &uv.x, &uv.y);
-            temp_uvs.push_back(uv);
-        } else if (strcmp(header, "vn") == 0) {
-            glm::vec3 n{};
-            (void)fscanf(file, "%f %f %f\n", &n.x, &n.y, &n.z);
-            temp_normals.push_back(n);
-        } else if (strcmp(header, "f") == 0) {
-            std::string v1, v2, v3;
-            unsigned int v_idx[3], uv_idx[3], n_idx[3];
-
-            int matches = fscanf(
-                file, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
-                &v_idx[0], &uv_idx[0], &n_idx[0],
-                &v_idx[1], &uv_idx[1], &n_idx[1],
-                &v_idx[2], &uv_idx[2], &n_idx[2]);
-            assert(matches == 9);
-
-            vertex_idxs.push_back(v_idx[0]);
-            vertex_idxs.push_back(v_idx[1]);
-            vertex_idxs.push_back(v_idx[2]);
-
-            uv_idxs.push_back(uv_idx[0]);
-            uv_idxs.push_back(uv_idx[1]);
-            uv_idxs.push_back(uv_idx[2]);
-
-            normal_idxs.push_back(n_idx[0]);
-            normal_idxs.push_back(n_idx[1]);
-            normal_idxs.push_back(n_idx[2]);
+        if (idx.vt > 0 && static_cast<size_t>(idx.vt) <= temp_uvs.size()) {
+            vertex.uv = temp_uvs[idx.vt - 1];
         }
+
+        if (idx.vn > 0 && static_cast<size_t>(idx.vn) <= temp_normals.size()) {
+            vertex.normal = temp_normals[idx.vn - 1];
+        }
+
+        vertices.push_back(vertex);
     }
 
-    for (size_t i = 0; i < vertex_idxs.size(); ++i) {
-        GLuint v_idx = vertex_idxs[i];
-        glm::vec3 v = temp_vertices[v_idx - 1];
-        out_vertices.push_back(v);
-    }
+    Modeye::Log::info("Loaded {} vertices from '{}'", vertices.size(), path.string());
 
-    for (size_t i = 0; i < uv_idxs.size(); ++i) {
-        GLuint uv_idx = uv_idxs[i];
-        glm::vec2 uv = temp_uvs[uv_idx - 1];
-        out_uvs.push_back(uv);
-    }
-
-    for (size_t i = 0; i < normal_idxs.size(); ++i) {
-        GLuint n_idx = normal_idxs[i];
-        glm::vec3 n = temp_normals[n_idx - 1];
-        out_normals.push_back(n);
-    }
-
-    Modeye::Log::info("Loaded {} vertices from '{}'", out_vertices.size(), path);
+    return vertices;
 }
 
 int main(int argc, char** argv)
@@ -132,20 +145,9 @@ int main(int argc, char** argv)
             state.camera.processMouseScroll(static_cast<float>(yoffset));
         });
 
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
-    loadOBJ("assets\\monkey.obj", vertices, uvs, normals);
-
-    std::vector<Modeye::Gfx::Vertex> newVertices(vertices.size());
-    for (size_t i = 0; i < vertices.size(); i++) {
-        newVertices.at(i).position = vertices.at(i);
-        newVertices.at(i).normal = normals.at(i);
-        newVertices.at(i).uv = uvs.at(i);
-    }
-
-    Modeye::Gfx::Mesh monkeyMesh(newVertices);
-    Modeye::Gfx::Shader shader("triangle.vert", "triangle.frag");
+    auto vertices = loadObj("assets\\monkey.obj");
+    auto monkeyMesh = Modeye::Gfx::Mesh(vertices);
+    auto shader = Modeye::Gfx::Shader("triangle.vert", "triangle.frag");
 
     while (!window.shouldClose()) {
         state.timer.startFrame();
