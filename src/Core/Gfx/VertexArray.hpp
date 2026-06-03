@@ -1,6 +1,6 @@
 #pragma once
+#include "../GL.hpp"
 #include "VertexBuffer.hpp"
-#include <glad/gl.h>
 
 namespace Modeye::Gfx
 {

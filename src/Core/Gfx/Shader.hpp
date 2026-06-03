@@ -1,6 +1,6 @@
 #pragma once
+#include "../GL.hpp"
 #include <filesystem>
-#include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <string>
 

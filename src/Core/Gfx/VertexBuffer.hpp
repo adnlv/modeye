@@ -1,5 +1,5 @@
 #pragma once
-#include <glad/gl.h>
+#include "../GL.hpp"
 
 namespace Modeye::Gfx
 {

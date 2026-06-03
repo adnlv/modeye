@@ -1,9 +1,3 @@
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/gl.h>
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Core/Gfx.hpp"
 #include "Core/Log.hpp"
 #include "Core/Timer.hpp"

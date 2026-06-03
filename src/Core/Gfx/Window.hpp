@@ -1,9 +1,4 @@
-#pragma once
-// Do not sort these two headers
-#include <glad/gl.h>
-// GLAD must be included first
-#include <GLFW/glfw3.h>
-
+#include "../GL.hpp"
 #include <string>
 
 namespace Modeye::Gfx
