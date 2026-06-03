@@ -52,6 +52,6 @@ void Modeye::Timer::endFrame()
         m_frameCount = 0;
         m_fpsTimer = 0;
 
-        Modeye::Log::debug("framesPerSecond {:>5} | deltaTime {:.7f}", m_currentFps, m_deltaTime);
+        Modeye::Log::trace("framesPerSecond {:>5} | deltaTime {:.7f}", m_currentFps, m_deltaTime);
     }
 }
