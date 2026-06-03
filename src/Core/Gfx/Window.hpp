@@ -7,7 +7,7 @@ namespace Modeye::Gfx
 class Window
 {
 public:
-    Window(int width, int height, const std::string& title, GLFWmonitor* monitor = nullptr);
+    Window(int width, int height, const std::string& title);
     ~Window();
 
     Window(const Window&) = delete;

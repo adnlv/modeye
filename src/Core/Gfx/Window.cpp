@@ -75,9 +75,31 @@ static void _glDebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum
     Modeye::Log::debug("OpenGL sent {} severity {} from {} ({}): {}", severity_str, type_str, source_str, id, message);
 }
 
-Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLFWmonitor* monitor)
-    : m_glfwMonitor(monitor),
-    m_frameBufferWidth(width),
+static void _centerWindow(GLFWwindow* window, GLFWmonitor* monitor)
+{
+    if (monitor == nullptr) {
+        return;
+    }
+
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    if (mode == nullptr) {
+        return;
+    }
+
+    int monitorX, monitorY;
+    glfwGetMonitorPos(monitor, &monitorX, &monitorY);
+
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+    glfwSetWindowPos(
+        window,
+        monitorX + (mode->width - windowWidth) / 2,
+        monitorY + (mode->height - windowHeight) / 2);
+}
+
+Modeye::Gfx::Window::Window(int width, int height, const std::string& title)
+    : m_frameBufferWidth(width),
     m_frameBufferHeight(height),
     m_aspectRatio(static_cast<float>(width) / height)
 {
@@ -99,7 +121,7 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
         m_frameBufferWidth,
         m_frameBufferHeight,
         title.c_str(),
-        monitor,
+        nullptr,
         nullptr);
     if (m_glfwWindow == nullptr) {
         Modeye::Log::error("GLFW window creation failed");
@@ -109,6 +131,9 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
     Modeye::Log::trace("Created {}x{} GLFW window called '{}'", width, height, title);
 
     glfwMakeContextCurrent(m_glfwWindow);
+
+    m_glfwMonitor = glfwGetPrimaryMonitor();
+    _centerWindow(m_glfwWindow, m_glfwMonitor);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
         Modeye::Log::error("GLAD failed to load OpenGL");
