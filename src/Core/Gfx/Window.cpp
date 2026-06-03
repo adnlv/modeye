@@ -1,6 +1,80 @@
 #include "../Log.hpp"
 #include "Window.hpp"
 
+static void _glDebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+    std::string source_str;
+    switch (source) {
+    case GL_DEBUG_SOURCE_API:
+        source_str = "API";
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        source_str = "WINDOW_SYSTEM";
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        source_str = "SHADER_COMPILER";
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        source_str = "THIRD_PARTY";
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        source_str = "APPLICATION";
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        source_str = "OTHER";
+        break;
+    }
+
+    std::string type_str;
+    switch (type) {
+    case GL_DEBUG_TYPE_ERROR:
+        type_str = "ERROR";
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        type_str = "DEPRECATED_BEHAVIOR";
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        type_str = "UNDEFINED_BEHAVIOR";
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        type_str = "PORTABILITY";
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        type_str = "PERFORMANCE";
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        type_str = "MARKER";
+        break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        type_str = "PUSH_GROUP";
+        break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        type_str = "POP_GROUP";
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        type_str = "OTHER";
+        break;
+    }
+
+    std::string severity_str;
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_HIGH:
+        severity_str = "HIGH";
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        severity_str = "MEDIUM";
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        severity_str = "LOW";
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        severity_str = "NOTIFICATION";
+        break;
+    }
+
+    Modeye::Log::warn("{} ({}) from {} ({}): {}", type_str, severity_str, source_str, id, message);
+}
+
 Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLFWmonitor* monitor)
     : m_glfwMonitor(monitor),
     m_frameBufferWidth(width),
@@ -18,6 +92,7 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
     glfwWindowHint(GLFW_SAMPLES, 8);
 
     m_glfwWindow = glfwCreateWindow(
@@ -43,6 +118,15 @@ Modeye::Gfx::Window::Window(int width, int height, const std::string& title, GLF
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+
+    int flags = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(_glDebugOutputCallback, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
 
     printSystemInfo();
 

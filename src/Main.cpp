@@ -173,10 +173,10 @@ int main(int argc, char** argv)
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Down, dt);
         }
 
+        shader.use();
         shader.setMat4("u_projection", state.camera.getProjectionMat(window.aspectRatio()));
         shader.setMat4("u_model", state.camera.getViewMat());
         shader.setMat4("u_view", glm::mat4(1.0f));
-        shader.use();
 
         monkeyMesh.draw(GL_TRIANGLES);
 
