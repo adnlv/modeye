@@ -1,7 +1,6 @@
 #include "Core/Gfx.hpp"
 #include "Core/Log.hpp"
 #include "Core/Timer.hpp"
-#include <cassert>
 #include <fstream>
 #include <sstream>
 
@@ -176,9 +175,12 @@ int main(int argc, char** argv)
         }
 
         shader.use();
+
+        auto model = glm::mat4(1.0f);
+
         shader.setMat4("u_projection", state.camera.getProjectionMat(window.aspectRatio()));
-        shader.setMat4("u_model", state.camera.getViewMat());
-        shader.setMat4("u_view", glm::mat4(1.0f));
+        shader.setMat4("u_view", state.camera.getViewMat());
+        shader.setMat4("u_model", model);
 
         monkeyMesh.draw(GL_TRIANGLES);
 
