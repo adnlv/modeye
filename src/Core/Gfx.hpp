@@ -1,5 +1,6 @@
 #pragma once
 #include "Gfx/Camera.hpp"
+#include "Gfx/IndexBuffer.hpp"
 #include "Gfx/Mesh.hpp"
 #include "Gfx/Shader.hpp"
 #include "Gfx/Vertex.hpp"

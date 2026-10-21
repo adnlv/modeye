@@ -49,6 +49,7 @@ add_executable(modeye
     "src/Core/Log.cpp"
     "src/Core/Timer.cpp"
     "src/Core/Gfx/Camera.cpp"
+    "src/Core/Gfx/IndexBuffer.cpp"
     "src/Core/Gfx/Mesh.cpp"
     "src/Core/Gfx/Shader.cpp"
     "src/Core/Gfx/VertexArray.cpp"
