@@ -51,6 +51,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stb)
 
+FetchContent_Declare(
+    tinyobjloader
+    GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
+    GIT_TAG v2.0.0rc13
+)
+FetchContent_MakeAvailable(tinyobjloader)
+
 add_executable(modeye 
     "src/Main.cpp" 
     "src/Core/Log.cpp"
@@ -58,6 +65,7 @@ add_executable(modeye
     "src/Core/Gfx/Camera.cpp"
     "src/Core/Gfx/IndexBuffer.cpp"
     "src/Core/Gfx/Mesh.cpp"
+    "src/Core/Gfx/Model.cpp"
     "src/Core/Gfx/Shader.cpp"
     "src/Core/Gfx/Texture.cpp"
     "src/Core/Gfx/VertexArray.cpp"
@@ -69,7 +77,7 @@ set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
 set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET modeye PROPERTY CXX_EXTENSIONS OFF)
 
-target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm spdlog::spdlog)
+target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm spdlog::spdlog tinyobjloader)
 target_include_directories(modeye PRIVATE ${stb_SOURCE_DIR})
 
 set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpedantic" "-g")
