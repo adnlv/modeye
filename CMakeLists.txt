@@ -62,8 +62,8 @@ set_property(TARGET modeye PROPERTY CXX_EXTENSIONS OFF)
 
 target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm spdlog::spdlog)
 
-set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-g")
-set(MODEYE_UNIX_RELEASE_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpendantic" "-Werror" "-O3")
+set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpedantic" "-g")
+set(MODEYE_UNIX_RELEASE_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-O3")
 set(MODEYE_UNIX_COMPILE_OPTIONS 
     "$<$<CONFIG:DEBUG>:$<JOIN:${MODEYE_UNIX_DEBUG_COMPILE_OPTIONS},;>>"
     "$<$<CONFIG:RELEASE>:$<JOIN:${MODEYE_UNIX_RELEASE_COMPILE_OPTIONS},;>>"
