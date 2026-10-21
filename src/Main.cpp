@@ -1,10 +1,14 @@
 #include "Core/Gfx.hpp"
 #include "Core/Log.hpp"
 #include "Core/Timer.hpp"
-#include <fstream>
-#include <sstream>
+#include <glm/gtc/matrix_transform.hpp>
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <filesystem>
+#include <vector>
 
-struct State
+struct AppState
 {
     Modeye::Timer timer;
     Modeye::Gfx::Camera camera;
@@ -12,116 +16,78 @@ struct State
     bool first_mouse = true;
     float last_x = 720.0f / 2.0f;
     float last_y = 480.0f / 2.0f;
+
+    bool cursor_captured = true;
     bool reload_shader_requested = false;
+
+    // Render parameters
+    int current_model_idx = 0; // 0 = Monkey, 1 = Dragon
+    int render_mode = 0;        // 0 = Blinn-Phong, 1 = Normal Visualizer, 2 = Unlit
+    bool wireframe = false;
+    bool auto_rotate = false;
+    float rotation_angle = 0.0f;
+
+    // Lighting parameters
+    glm::vec3 light_pos = glm::vec3(2.5f, 4.0f, 3.0f);
+    glm::vec3 light_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 object_color = glm::vec3(0.85f, 0.55f, 0.25f);
+    float ambient_strength = 0.20f;
+    float specular_strength = 0.65f;
+    float shininess = 32.0f;
+
+    bool use_texture = false;
 } state;
 
-static auto loadObj(const std::filesystem::path& path) -> std::vector<Modeye::Gfx::Vertex>
-{
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open OBJ file: " + path.string());
-    }
-
-    std::vector<glm::vec3> temp_vertices;
-    std::vector<glm::vec3> temp_normals;
-    std::vector<glm::vec2> temp_uvs;
-
-    struct FaceIndex
-    {
-        GLuint v = 0;
-        GLuint vt = 0;
-        GLuint vn = 0;
-    };
-
-    std::vector<FaceIndex> face_indices;
-    std::string line;
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string prefix;
-        ss >> prefix;
-
-        if (prefix == "v") {
-            glm::vec3 v;
-            if (ss >> v.x >> v.y >> v.z) {
-                temp_vertices.push_back(v);
-            }
-        } else if (prefix == "vt") {
-            glm::vec2 uv;
-            if (ss >> uv.x >> uv.y) {
-                temp_uvs.push_back(uv);
-            }
-        } else if (prefix == "vn") {
-            glm::vec3 n;
-            if (ss >> n.x >> n.y >> n.z) {
-                temp_normals.push_back(n);
-            }
-        } else if (prefix == "f") {
-            FaceIndex f[3];
-            char slash;
-            bool parse_success = true;
-
-            // Parsers the standard format: v/vt/vn v/vt/vn v/vt/vn
-            for (int i = 0; i < 3; ++i) {
-                if (!(ss >> f[i].v >> slash >> f[i].vt >> slash >> f[i].vn)) {
-                    parse_success = false;
-                    break;
-                }
-            }
-            if (parse_success) {
-                face_indices.push_back(f[0]);
-                face_indices.push_back(f[1]);
-                face_indices.push_back(f[2]);
-            } else {
-                Modeye::Log::warn("Skipped malformed face line: '{}'", line);
-            }
-        }
-    }
-
-    std::vector<Modeye::Gfx::Vertex> vertices;
-    vertices.reserve(face_indices.size());
-
-    for (const auto& idx : face_indices) {
-        Modeye::Gfx::Vertex vertex{};
-        // OBJ indices are 1-based; bounds checks are applied to prevent segfaults
-
-        if (idx.v > 0 && static_cast<size_t>(idx.v) <= temp_vertices.size()) {
-            vertex.position = temp_vertices[idx.v - 1];
-        }
-
-        if (idx.vt > 0 && static_cast<size_t>(idx.vt) <= temp_uvs.size()) {
-            vertex.uv = temp_uvs[idx.vt - 1];
-        }
-
-        if (idx.vn > 0 && static_cast<size_t>(idx.vn) <= temp_normals.size()) {
-            vertex.normal = temp_normals[idx.vn - 1];
-        }
-
-        vertices.push_back(vertex);
-    }
-
-    Modeye::Log::info("Loaded {} vertices from '{}'", vertices.size(), path.string());
-
-    return vertices;
-}
-
-int main(int argc, char** argv)
+int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 {
     Modeye::Log::init();
 
-    Modeye::Gfx::Window window(720, 480, "Modeye");
+    Modeye::Gfx::Window window(1280, 720, "Modeye 3D Graphics Engine");
     window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    window.setKeyCallback([](GLFWwindow* window, int key, int scancode, int action, int mods)
+
+    // Initialize Dear ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::StyleColorsDark();
+
+    // Style adjustments for modern sleek look
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 6.0f;
+    style.FrameRounding = 4.0f;
+    style.PopupRounding = 4.0f;
+    style.ScrollbarRounding = 4.0f;
+    style.GrabRounding = 4.0f;
+
+    ImGui_ImplGlfw_InitForOpenGL(window.glfwWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 460");
+
+    window.setKeyCallback([]([[maybe_unused]] GLFWwindow* win, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods)
         {
             if (action == GLFW_PRESS) {
                 if (key == GLFW_KEY_ESCAPE) {
-                    glfwSetWindowShouldClose(window, true);
+                    glfwSetWindowShouldClose(win, true);
+                } else if (key == GLFW_KEY_TAB) {
+                    state.cursor_captured = !state.cursor_captured;
+                    glfwSetInputMode(win, GLFW_CURSOR, state.cursor_captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+                    if (state.cursor_captured) {
+                        state.first_mouse = true;
+                    }
                 } else if (key == GLFW_KEY_R) {
                     state.reload_shader_requested = true;
+                } else if (key == GLFW_KEY_Z) {
+                    state.wireframe = !state.wireframe;
                 }
             }
         });
-    window.setCursorPosCallback([](GLFWwindow* window, double xposIn, double yposIn)
+
+    window.setCursorPosCallback([]([[maybe_unused]] GLFWwindow* win, double xposIn, double yposIn)
         {
+            if (!state.cursor_captured) {
+                return;
+            }
+
             float xpos = static_cast<float>(xposIn);
             float ypos = static_cast<float>(yposIn);
 
@@ -131,7 +97,6 @@ int main(int argc, char** argv)
                 state.first_mouse = false;
             }
 
-            // Reversed since coordinates go from bottom to top
             float xoffset = state.last_x - xpos;
             float yoffset = state.last_y - ypos;
 
@@ -140,54 +105,146 @@ int main(int argc, char** argv)
 
             state.camera.processMouseMovement(xoffset, yoffset);
         });
-    window.setScrollCallback([](GLFWwindow* window, double xoffset, double yoffset)
+
+    window.setScrollCallback([]([[maybe_unused]] GLFWwindow* win, [[maybe_unused]] double xoffset, double yoffset)
         {
-            state.camera.processMouseScroll(static_cast<float>(yoffset));
+            if (state.cursor_captured) {
+                state.camera.processMouseScroll(static_cast<float>(yoffset));
+            }
         });
 
-    auto vertices = loadObj("assets/monkey.obj");
-    auto monkeyMesh = Modeye::Gfx::Mesh(vertices);
+    // Load Shaders
     auto shader = Modeye::Gfx::Shader("mesh.vert", "mesh.frag");
 
-    glm::vec3 lightPos(2.0f, 4.0f, 3.0f);
-    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-    glm::vec3 objectColor(0.85f, 0.55f, 0.25f);
-    int renderMode = 0; // 0 = Blinn-Phong, 1 = Normals, 2 = Unlit
+    // Load Models using robust Model class
+    Modeye::Log::info("Loading 3D assets...");
+    Modeye::Gfx::Model monkeyModel("assets/monkey.obj");
+    Modeye::Gfx::Model dragonModel("assets/dragon.obj");
+
+    // Create default procedural texture
+    auto checkerTexture = Modeye::Gfx::Texture::createCheckerboard(256, 16);
+
+    std::vector<float> frameTimes(100, 0.0f);
+    int frameTimeIdx = 0;
 
     while (!window.shouldClose()) {
         state.timer.startFrame();
 
-        glfwPollEvents();
-
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        window.pollEvents();
 
         const float dt = state.timer.deltaTime();
 
-        if (window.getKey(GLFW_KEY_W)) {
-            state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Forward, dt);
-        } else if (window.getKey(GLFW_KEY_S)) {
-            state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Backward, dt);
-        }
-        if (window.getKey(GLFW_KEY_D)) {
-            state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Right, dt);
-        } else if (window.getKey(GLFW_KEY_A)) {
-            state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Left, dt);
-        }
-        if (window.getKey(GLFW_KEY_SPACE)) {
-            state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Up, dt);
-        } else if (window.getKey(GLFW_KEY_C)) {
-            state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Down, dt);
+        // Keyboard navigation (only active when camera mode is captured)
+        if (state.cursor_captured) {
+            if (window.getKey(GLFW_KEY_W)) {
+                state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Forward, dt);
+            } else if (window.getKey(GLFW_KEY_S)) {
+                state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Backward, dt);
+            }
+            if (window.getKey(GLFW_KEY_D)) {
+                state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Right, dt);
+            } else if (window.getKey(GLFW_KEY_A)) {
+                state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Left, dt);
+            }
+            if (window.getKey(GLFW_KEY_SPACE)) {
+                state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Up, dt);
+            } else if (window.getKey(GLFW_KEY_C)) {
+                state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Down, dt);
+            }
         }
 
+        // Live shader hot-reload
         if (state.reload_shader_requested) {
             state.reload_shader_requested = false;
             shader.reload();
         }
 
+        if (state.auto_rotate) {
+            state.rotation_angle += 45.0f * dt;
+            if (state.rotation_angle >= 360.0f) {
+                state.rotation_angle -= 360.0f;
+            }
+        }
+
+        // Start Dear ImGui Frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // ImGui Control Panel Window
+        {
+            ImGui::SetNextWindowPos(ImVec2(16.0f, 16.0f), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(340.0f, 520.0f), ImGuiCond_FirstUseEver);
+            ImGui::Begin("Modeye Control Panel", nullptr);
+
+            if (ImGui::CollapsingHeader("Metrics & Performance", ImGuiTreeNodeFlags_DefaultOpen)) {
+                float fps = dt > 0.0f ? 1.0f / dt : 0.0f;
+                frameTimes[frameTimeIdx] = dt * 1000.0f;
+                frameTimeIdx = (frameTimeIdx + 1) % frameTimes.size();
+
+                ImGui::Text("FPS: %.1f", fps);
+                ImGui::Text("Frame Time: %.2f ms", dt * 1000.0f);
+                ImGui::PlotLines("##frametime", frameTimes.data(), static_cast<int>(frameTimes.size()), frameTimeIdx, "Frame Time (ms)", 0.0f, 35.0f, ImVec2(0, 50));
+                ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Mode: %s [TAB to toggle]", state.cursor_captured ? "CAMERA LOOK" : "UI CURSOR");
+            }
+
+            if (ImGui::CollapsingHeader("Model & Geometry", ImGuiTreeNodeFlags_DefaultOpen)) {
+                const char* models[] = { "Suzanne (Blender Monkey)", "Stanford Dragon" };
+                ImGui::Combo("Select Model", &state.current_model_idx, models, IM_ARRAYSIZE(models));
+
+                const Modeye::Gfx::Model& activeModel = (state.current_model_idx == 0) ? monkeyModel : dragonModel;
+                ImGui::Text("Vertices: %zu | Triangles: %zu", activeModel.vertexCount(), activeModel.indexCount() / 3);
+
+                ImGui::Checkbox("Wireframe Mode (Z)", &state.wireframe);
+                ImGui::Checkbox("Auto-Rotate Model", &state.auto_rotate);
+                ImGui::SliderFloat("Rotation Angle", &state.rotation_angle, 0.0f, 360.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Shading & Materials", ImGuiTreeNodeFlags_DefaultOpen)) {
+                const char* modes[] = { "Blinn-Phong Lighting", "Surface Normals", "Unlit Flat Color" };
+                ImGui::Combo("Render Mode", &state.render_mode, modes, IM_ARRAYSIZE(modes));
+
+                ImGui::Checkbox("Use Checkerboard Texture", &state.use_texture);
+                ImGui::ColorEdit3("Object Color", &state.object_color.x);
+                ImGui::SliderFloat("Ambient", &state.ambient_strength, 0.0f, 1.0f);
+                ImGui::SliderFloat("Specular", &state.specular_strength, 0.0f, 2.0f);
+                ImGui::SliderFloat("Shininess", &state.shininess, 2.0f, 128.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Lighting Setup", ImGuiTreeNodeFlags_DefaultOpen)) {
+                ImGui::DragFloat3("Light Position", &state.light_pos.x, 0.1f);
+                ImGui::ColorEdit3("Light Color", &state.light_color.x);
+            }
+
+            if (ImGui::CollapsingHeader("Camera Info")) {
+                glm::vec3 camPos = state.camera.position();
+                ImGui::Text("Position: (%.2f, %.2f, %.2f)", camPos.x, camPos.y, camPos.z);
+            }
+
+            ImGui::Separator();
+            if (ImGui::Button("Reload Shaders (R)")) {
+                state.reload_shader_requested = true;
+            }
+
+            ImGui::End();
+        }
+
+        // Render scene
+        glClearColor(0.12f, 0.12f, 0.14f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glPolygonMode(GL_FRONT_AND_BACK, state.wireframe ? GL_LINE : GL_FILL);
+
         shader.use();
 
         auto model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(state.rotation_angle), glm::vec3(0.0f, 1.0f, 0.0f));
+
+        // Adjust dragon scale if dragon is selected (since Stanford dragon has different dimensions)
+        if (state.current_model_idx == 1) {
+            model = glm::scale(model, glm::vec3(0.8f));
+        }
+
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
 
         shader.setMat4("u_projection", state.camera.getProjectionMat(window.aspectRatio()));
@@ -195,22 +252,40 @@ int main(int argc, char** argv)
         shader.setMat4("u_model", model);
         shader.setMat3("u_normalMatrix", normalMatrix);
 
-        shader.setInt("u_renderMode", renderMode);
-        shader.setVec3("u_lightPos", lightPos);
-        shader.setVec3("u_lightColor", lightColor);
+        shader.setInt("u_renderMode", state.render_mode);
+        shader.setVec3("u_lightPos", state.light_pos);
+        shader.setVec3("u_lightColor", state.light_color);
         shader.setVec3("u_viewPos", state.camera.position());
-        shader.setVec3("u_objectColor", objectColor);
-        shader.setFloat("u_ambientStrength", 0.15f);
-        shader.setFloat("u_specularStrength", 0.6f);
-        shader.setFloat("u_shininess", 32.0f);
+        shader.setVec3("u_objectColor", state.object_color);
+        shader.setFloat("u_ambientStrength", state.ambient_strength);
+        shader.setFloat("u_specularStrength", state.specular_strength);
+        shader.setFloat("u_shininess", state.shininess);
 
-        monkeyMesh.draw(GL_TRIANGLES);
+        shader.setBool("u_useTexture", state.use_texture);
+        if (state.use_texture) {
+            checkerTexture.bind(0);
+            shader.setInt("u_diffuseMap", 0);
+        }
 
-        window.pollEvents();
+        if (state.current_model_idx == 0) {
+            monkeyModel.draw(GL_TRIANGLES);
+        } else {
+            dragonModel.draw(GL_TRIANGLES);
+        }
+
+        // Render ImGui over OpenGL content
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         window.swapBuffers();
-
         state.timer.endFrame();
     }
+
+    // Cleanup Dear ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     return 0;
 }

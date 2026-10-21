@@ -58,6 +58,25 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.91.5
+)
+FetchContent_MakeAvailable(imgui)
+
+add_library(imgui STATIC
+    "${imgui_SOURCE_DIR}/imgui.cpp"
+    "${imgui_SOURCE_DIR}/imgui_demo.cpp"
+    "${imgui_SOURCE_DIR}/imgui_draw.cpp"
+    "${imgui_SOURCE_DIR}/imgui_tables.cpp"
+    "${imgui_SOURCE_DIR}/imgui_widgets.cpp"
+    "${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp"
+    "${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp"
+)
+target_include_directories(imgui PUBLIC "${imgui_SOURCE_DIR}" "${imgui_SOURCE_DIR}/backends")
+target_link_libraries(imgui PUBLIC glfw glad_gl_core_46)
+
 add_executable(modeye 
     "src/Main.cpp" 
     "src/Core/Log.cpp"
@@ -77,7 +96,7 @@ set_property(TARGET modeye PROPERTY CXX_STANDARD 17)
 set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET modeye PROPERTY CXX_EXTENSIONS OFF)
 
-target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm spdlog::spdlog tinyobjloader)
+target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm spdlog::spdlog tinyobjloader imgui)
 target_include_directories(modeye PRIVATE ${stb_SOURCE_DIR})
 
 set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpedantic" "-g")
