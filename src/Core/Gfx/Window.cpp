@@ -81,6 +81,12 @@ static void _centerWindow(GLFWwindow* window, GLFWmonitor* monitor)
         return;
     }
 
+#if defined(GLFW_PLATFORM_WAYLAND)
+    if (glfwGetPlatform() == GLFW_PLATFORM_WAYLAND) {
+        return;
+    }
+#endif
+
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     if (mode == nullptr) {
         return;

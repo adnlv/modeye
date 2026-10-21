@@ -40,10 +40,10 @@ void Modeye::Gfx::Camera::processKeyboard(Modeye::Gfx::Camera::Direction directi
         m_position.z -= m_right.z * velocity;
         break;
     case Modeye::Gfx::Camera::Direction::Up:
-        m_position.y += m_up.y * velocity;
+        m_position.y += velocity;
         break;
     case Modeye::Gfx::Camera::Direction::Down:
-        m_position.y -= m_up.y * velocity;
+        m_position.y -= velocity;
         break;
     default:
         break;

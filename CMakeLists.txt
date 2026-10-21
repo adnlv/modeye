@@ -88,4 +88,9 @@ add_custom_target(copy_shaders ALL
     COMMENT "Copy shaders to the target directory"
 )
 
-add_dependencies(modeye copy_shaders)
+add_custom_target(copy_assets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:modeye>/assets"
+    COMMENT "Copy assets to the target directory"
+)
+
+add_dependencies(modeye copy_shaders copy_assets)

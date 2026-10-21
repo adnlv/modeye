@@ -12,6 +12,7 @@ struct State
     bool first_mouse = true;
     float last_x = 720.0f / 2.0f;
     float last_y = 480.0f / 2.0f;
+    bool reload_shader_requested = false;
 } state;
 
 static auto loadObj(const std::filesystem::path& path) -> std::vector<Modeye::Gfx::Vertex>
@@ -115,7 +116,7 @@ int main(int argc, char** argv)
                 if (key == GLFW_KEY_ESCAPE) {
                     glfwSetWindowShouldClose(window, true);
                 } else if (key == GLFW_KEY_R) {
-                    // TODO: implement
+                    state.reload_shader_requested = true;
                 }
             }
         });
@@ -144,7 +145,7 @@ int main(int argc, char** argv)
             state.camera.processMouseScroll(static_cast<float>(yoffset));
         });
 
-    auto vertices = loadObj("assets\\monkey.obj");
+    auto vertices = loadObj("assets/monkey.obj");
     auto monkeyMesh = Modeye::Gfx::Mesh(vertices);
     auto shader = Modeye::Gfx::Shader("triangle.vert", "triangle.frag");
 
@@ -172,6 +173,11 @@ int main(int argc, char** argv)
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Up, dt);
         } else if (window.getKey(GLFW_KEY_C)) {
             state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Down, dt);
+        }
+
+        if (state.reload_shader_requested) {
+            state.reload_shader_requested = false;
+            shader.reload();
         }
 
         shader.use();

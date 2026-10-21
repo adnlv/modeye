@@ -1,6 +1,8 @@
 #include "Log.hpp"
 #include "Timer.hpp"
 #include <GLFW/glfw3.h>
+#include <chrono>
+#include <thread>
 
 Modeye::Timer::Timer(float targetFps)
 {
@@ -37,7 +39,11 @@ void Modeye::Timer::endFrame()
     const double frameTime = glfwGetTime() - m_frameStart;
 
     if (m_targetFrameTime > 0 && frameTime < m_targetFrameTime) {
-        // Busy-wait for the remaining precise milliseconds
+        const double sleepTime = m_targetFrameTime - frameTime;
+        if (sleepTime > 0.002) {
+            std::this_thread::sleep_for(std::chrono::duration<double>(sleepTime - 0.001));
+        }
+        // Busy-wait for the remaining precise sub-millisecond
         while (glfwGetTime() - m_frameStart < m_targetFrameTime) {
         }
     }
