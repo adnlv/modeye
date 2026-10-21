@@ -28,6 +28,15 @@ static void setupVertexAttributes(const Modeye::Gfx::VertexArray& vao, const Mod
         sizeof(Modeye::Gfx::Vertex),
         reinterpret_cast<const void*>(offsetof(Modeye::Gfx::Vertex, uv))
     );
+
+    vao.linkAttrib(
+        vbo,
+        3,
+        3,
+        GL_FLOAT,
+        sizeof(Modeye::Gfx::Vertex),
+        reinterpret_cast<const void*>(offsetof(Modeye::Gfx::Vertex, color))
+    );
 }
 
 Modeye::Gfx::Mesh::Mesh(const std::vector<Modeye::Gfx::Vertex>& vertices)

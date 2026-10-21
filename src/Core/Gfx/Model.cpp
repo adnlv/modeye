@@ -2,6 +2,8 @@
 #include "../Log.hpp"
 #include <tiny_obj_loader.h>
 #include <unordered_map>
+#include <limits>
+#include <algorithm>
 
 // Hash specialization for Vertex deduplication
 struct VertexHasher
@@ -11,7 +13,8 @@ struct VertexHasher
         size_t h1 = std::hash<float>()(v.position.x) ^ (std::hash<float>()(v.position.y) << 1) ^ (std::hash<float>()(v.position.z) << 2);
         size_t h2 = std::hash<float>()(v.normal.x) ^ (std::hash<float>()(v.normal.y) << 1) ^ (std::hash<float>()(v.normal.z) << 2);
         size_t h3 = std::hash<float>()(v.uv.x) ^ (std::hash<float>()(v.uv.y) << 1);
-        return h1 ^ (h2 << 1) ^ (h3 << 2);
+        size_t h4 = std::hash<float>()(v.color.r) ^ (std::hash<float>()(v.color.g) << 1) ^ (std::hash<float>()(v.color.b) << 2);
+        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
     }
 };
 
@@ -42,48 +45,81 @@ bool Modeye::Gfx::Model::loadFromFile(const std::filesystem::path& filepath)
     }
 
     m_name = filepath.stem().string();
+    m_hasMaterials = !materials.empty();
 
     std::vector<Modeye::Gfx::Vertex> vertices;
     std::vector<uint32_t> indices;
     std::unordered_map<Modeye::Gfx::Vertex, uint32_t, VertexHasher> uniqueVertices;
 
+    glm::vec3 minBounds(std::numeric_limits<float>::max());
+    glm::vec3 maxBounds(std::numeric_limits<float>::lowest());
+
     for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            Modeye::Gfx::Vertex vertex{};
+        size_t index_offset = 0;
+        for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); ++f) {
+            size_t fv = shape.mesh.num_face_vertices[f];
 
-            if (index.vertex_index >= 0) {
-                vertex.position = {
-                    attrib.vertices[3 * index.vertex_index + 0],
-                    attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2]
-                };
+            glm::vec3 matColor(1.0f);
+            if (f < shape.mesh.material_ids.size()) {
+                int matId = shape.mesh.material_ids[f];
+                if (matId >= 0 && static_cast<size_t>(matId) < materials.size()) {
+                    matColor = glm::vec3(
+                        materials[matId].diffuse[0],
+                        materials[matId].diffuse[1],
+                        materials[matId].diffuse[2]
+                    );
+                }
             }
 
-            if (index.normal_index >= 0) {
-                vertex.normal = {
-                    attrib.normals[3 * index.normal_index + 0],
-                    attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2]
-                };
-            }
+            for (size_t v = 0; v < fv; ++v) {
+                const auto& index = shape.mesh.indices[index_offset + v];
+                Modeye::Gfx::Vertex vertex{};
+                vertex.color = matColor;
 
-            if (index.texcoord_index >= 0) {
-                vertex.uv = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    attrib.texcoords[2 * index.texcoord_index + 1]
-                };
-            }
+                if (index.vertex_index >= 0) {
+                    vertex.position = {
+                        attrib.vertices[3 * index.vertex_index + 0],
+                        attrib.vertices[3 * index.vertex_index + 1],
+                        attrib.vertices[3 * index.vertex_index + 2]
+                    };
+                    minBounds = glm::min(minBounds, vertex.position);
+                    maxBounds = glm::max(maxBounds, vertex.position);
+                }
 
-            auto it = uniqueVertices.find(vertex);
-            if (it == uniqueVertices.end()) {
-                uint32_t newIndex = static_cast<uint32_t>(vertices.size());
-                uniqueVertices[vertex] = newIndex;
-                vertices.push_back(vertex);
-                indices.push_back(newIndex);
-            } else {
-                indices.push_back(it->second);
+                if (index.normal_index >= 0) {
+                    vertex.normal = {
+                        attrib.normals[3 * index.normal_index + 0],
+                        attrib.normals[3 * index.normal_index + 1],
+                        attrib.normals[3 * index.normal_index + 2]
+                    };
+                }
+
+                if (index.texcoord_index >= 0) {
+                    vertex.uv = {
+                        attrib.texcoords[2 * index.texcoord_index + 0],
+                        attrib.texcoords[2 * index.texcoord_index + 1]
+                    };
+                }
+
+                auto it = uniqueVertices.find(vertex);
+                if (it == uniqueVertices.end()) {
+                    uint32_t newIndex = static_cast<uint32_t>(vertices.size());
+                    uniqueVertices[vertex] = newIndex;
+                    vertices.push_back(vertex);
+                    indices.push_back(newIndex);
+                } else {
+                    indices.push_back(it->second);
+                }
             }
+            index_offset += fv;
         }
+    }
+
+    if (!vertices.empty()) {
+        m_boundsMin = minBounds;
+        m_boundsMax = maxBounds;
+        m_center = (minBounds + maxBounds) * 0.5f;
+        m_size = maxBounds - minBounds;
     }
 
     // If normals were missing entirely, compute face normals per triangle

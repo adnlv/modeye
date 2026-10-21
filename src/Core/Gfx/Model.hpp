@@ -27,12 +27,22 @@ public:
     const std::string& name() const { return m_name; }
     size_t vertexCount() const { return m_vertexCount; }
     size_t indexCount() const { return m_indexCount; }
+    bool hasMaterials() const { return m_hasMaterials; }
+    const glm::vec3& center() const { return m_center; }
+    const glm::vec3& boundsMin() const { return m_boundsMin; }
+    const glm::vec3& boundsMax() const { return m_boundsMax; }
+    const glm::vec3& size() const { return m_size; }
 
 private:
     std::string m_name;
     std::unique_ptr<Mesh> m_mesh;
     size_t m_vertexCount = 0;
     size_t m_indexCount = 0;
+    bool m_hasMaterials = false;
+    glm::vec3 m_boundsMin{ 0.0f };
+    glm::vec3 m_boundsMax{ 0.0f };
+    glm::vec3 m_center{ 0.0f };
+    glm::vec3 m_size{ 0.0f };
 };
 
 }
