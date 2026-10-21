@@ -13,11 +13,15 @@ struct AppState
     Modeye::Timer timer;
     Modeye::Gfx::Camera camera;
 
-    bool first_mouse = true;
-    float last_x = 720.0f / 2.0f;
-    float last_y = 480.0f / 2.0f;
+    // Viewport drag camera rotation state
+    bool is_rotating_camera = false;
+    bool first_mouse_drag = false;
+    int drag_button = -1;
+    double drag_start_x = 0.0;
+    double drag_start_y = 0.0;
+    float last_x = 0.0f;
+    float last_y = 0.0f;
 
-    bool cursor_captured = true;
     bool reload_shader_requested = false;
 
     // Render parameters
@@ -43,7 +47,96 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
     Modeye::Log::init();
 
     Modeye::Gfx::Window window(1280, 720, "Modeye 3D Graphics Engine");
-    window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    window.setInputMode(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+    // Set GLFW callbacks before ImGui installs its chaining callbacks
+    window.setKeyCallback([]([[maybe_unused]] GLFWwindow* win, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods)
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            if (action == GLFW_PRESS) {
+                if (key == GLFW_KEY_ESCAPE) {
+                    glfwSetWindowShouldClose(win, true);
+                } else if (!io.WantTextInput) {
+                    if (key == GLFW_KEY_R) {
+                        state.reload_shader_requested = true;
+                    } else if (key == GLFW_KEY_Z) {
+                        state.wireframe = !state.wireframe;
+                    }
+                }
+            }
+        });
+
+    window.setMouseButtonCallback([](GLFWwindow* win, int button, int action, [[maybe_unused]] int mods)
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            if (action == GLFW_PRESS) {
+                if (!state.is_rotating_camera && (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT)) {
+                    if (!io.WantCaptureMouse) {
+                        state.is_rotating_camera = true;
+                        state.first_mouse_drag = true;
+                        state.drag_button = button;
+
+                        glfwGetCursorPos(win, &state.drag_start_x, &state.drag_start_y);
+                        state.last_x = static_cast<float>(state.drag_start_x);
+                        state.last_y = static_cast<float>(state.drag_start_y);
+
+                        // Capture cursor for infinite viewport rotation
+                        glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                    }
+                }
+            } else if (action == GLFW_RELEASE) {
+                if (state.is_rotating_camera && button == state.drag_button) {
+                    state.is_rotating_camera = false;
+                    state.drag_button = -1;
+
+                    // Restore cursor visibility and return to initial click position
+                    glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                    glfwSetCursorPos(win, state.drag_start_x, state.drag_start_y);
+                }
+            }
+        });
+
+    window.setCursorPosCallback([]([[maybe_unused]] GLFWwindow* win, double xposIn, double yposIn)
+        {
+            if (!state.is_rotating_camera) {
+                return;
+            }
+
+            float xpos = static_cast<float>(xposIn);
+            float ypos = static_cast<float>(yposIn);
+
+            if (state.first_mouse_drag) {
+                state.last_x = xpos;
+                state.last_y = ypos;
+                state.first_mouse_drag = false;
+                return;
+            }
+
+            float xoffset = state.last_x - xpos;
+            float yoffset = state.last_y - ypos;
+
+            state.last_x = xpos;
+            state.last_y = ypos;
+
+            state.camera.processMouseMovement(xoffset, yoffset);
+        });
+
+    window.setScrollCallback([]([[maybe_unused]] GLFWwindow* win, [[maybe_unused]] double xoffset, double yoffset)
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            if (!io.WantCaptureMouse) {
+                state.camera.processMouseScroll(static_cast<float>(yoffset));
+            }
+        });
+
+    window.setWindowFocusCallback([](GLFWwindow* win, int focused)
+        {
+            if (!focused && state.is_rotating_camera) {
+                state.is_rotating_camera = false;
+                state.drag_button = -1;
+                glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
+        });
 
     // Initialize Dear ImGui
     IMGUI_CHECKVERSION();
@@ -62,56 +155,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 
     ImGui_ImplGlfw_InitForOpenGL(window.glfwWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 460");
-
-    window.setKeyCallback([]([[maybe_unused]] GLFWwindow* win, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods)
-        {
-            if (action == GLFW_PRESS) {
-                if (key == GLFW_KEY_ESCAPE) {
-                    glfwSetWindowShouldClose(win, true);
-                } else if (key == GLFW_KEY_TAB) {
-                    state.cursor_captured = !state.cursor_captured;
-                    glfwSetInputMode(win, GLFW_CURSOR, state.cursor_captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-                    if (state.cursor_captured) {
-                        state.first_mouse = true;
-                    }
-                } else if (key == GLFW_KEY_R) {
-                    state.reload_shader_requested = true;
-                } else if (key == GLFW_KEY_Z) {
-                    state.wireframe = !state.wireframe;
-                }
-            }
-        });
-
-    window.setCursorPosCallback([]([[maybe_unused]] GLFWwindow* win, double xposIn, double yposIn)
-        {
-            if (!state.cursor_captured) {
-                return;
-            }
-
-            float xpos = static_cast<float>(xposIn);
-            float ypos = static_cast<float>(yposIn);
-
-            if (state.first_mouse) {
-                state.last_x = xpos;
-                state.last_y = ypos;
-                state.first_mouse = false;
-            }
-
-            float xoffset = state.last_x - xpos;
-            float yoffset = state.last_y - ypos;
-
-            state.last_x = xpos;
-            state.last_y = ypos;
-
-            state.camera.processMouseMovement(xoffset, yoffset);
-        });
-
-    window.setScrollCallback([]([[maybe_unused]] GLFWwindow* win, [[maybe_unused]] double xoffset, double yoffset)
-        {
-            if (state.cursor_captured) {
-                state.camera.processMouseScroll(static_cast<float>(yoffset));
-            }
-        });
 
     // Load Shaders
     auto shader = Modeye::Gfx::Shader("mesh.vert", "mesh.frag");
@@ -134,8 +177,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 
         const float dt = state.timer.deltaTime();
 
-        // Keyboard navigation (only active when camera mode is captured)
-        if (state.cursor_captured) {
+        // Keyboard navigation (active unless typing in an ImGui text input field)
+        if (!io.WantTextInput) {
             if (window.getKey(GLFW_KEY_W)) {
                 state.camera.processKeyboard(Modeye::Gfx::Camera::Direction::Forward, dt);
             } else if (window.getKey(GLFW_KEY_S)) {
@@ -185,7 +228,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
                 ImGui::Text("FPS: %.1f", fps);
                 ImGui::Text("Frame Time: %.2f ms", dt * 1000.0f);
                 ImGui::PlotLines("##frametime", frameTimes.data(), static_cast<int>(frameTimes.size()), frameTimeIdx, "Frame Time (ms)", 0.0f, 35.0f, ImVec2(0, 50));
-                ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Mode: %s [TAB to toggle]", state.cursor_captured ? "CAMERA LOOK" : "UI CURSOR");
+                ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Navigation: Hold LMB/RMB to rotate | WASD fly");
             }
 
             if (ImGui::CollapsingHeader("Model & Geometry", ImGuiTreeNodeFlags_DefaultOpen)) {
