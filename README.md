@@ -8,6 +8,8 @@
 
 A modern, lightweight 3D graphics rendering engine and interactive sandbox built with **C++17** and **OpenGL 4.6 Core Profile**. Modeye is designed to provide clean, RAII-driven abstractions over the raw OpenGL state machine, featuring indexed rendering, Blinn-Phong lighting, runtime shader hot-reloading, robust OBJ asset loading, and a real-time debug interface powered by Dear ImGui.
 
+![Modeye Demo](docs/demo.gif)
+
 ---
 
 ## Key Features
