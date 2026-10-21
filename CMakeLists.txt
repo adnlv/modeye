@@ -44,6 +44,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(stb)
+
 add_executable(modeye 
     "src/Main.cpp" 
     "src/Core/Log.cpp"
@@ -52,6 +59,7 @@ add_executable(modeye
     "src/Core/Gfx/IndexBuffer.cpp"
     "src/Core/Gfx/Mesh.cpp"
     "src/Core/Gfx/Shader.cpp"
+    "src/Core/Gfx/Texture.cpp"
     "src/Core/Gfx/VertexArray.cpp"
     "src/Core/Gfx/VertexBuffer.cpp"
     "src/Core/Gfx/Window.cpp"
@@ -62,6 +70,7 @@ set_property(TARGET modeye PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET modeye PROPERTY CXX_EXTENSIONS OFF)
 
 target_link_libraries(modeye PRIVATE glfw glad_gl_core_46 glm spdlog::spdlog)
+target_include_directories(modeye PRIVATE ${stb_SOURCE_DIR})
 
 set(MODEYE_UNIX_DEBUG_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpedantic" "-g")
 set(MODEYE_UNIX_RELEASE_COMPILE_OPTIONS "-Wall" "-Wextra" "-Wpedantic" "-Werror" "-O3")

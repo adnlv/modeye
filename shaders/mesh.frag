@@ -21,6 +21,10 @@ uniform float u_ambientStrength;
 uniform float u_specularStrength;
 uniform float u_shininess;
 
+// Texture uniforms
+uniform sampler2D u_diffuseMap;
+uniform bool u_useTexture;
+
 void main()
 {
     vec3 norm = normalize(v_normal);
@@ -32,9 +36,14 @@ void main()
         return;
     }
 
+    vec3 baseColor = u_objectColor;
+    if (u_useTexture) {
+        baseColor *= texture(u_diffuseMap, v_uv).rgb;
+    }
+
     if (u_renderMode == 2) {
         // Unlit flat color
-        o_color = vec4(u_objectColor, 1.0);
+        o_color = vec4(baseColor, 1.0);
         return;
     }
 
@@ -53,6 +62,6 @@ void main()
     float spec = pow(max(dot(norm, halfwayDir), 0.0), u_shininess);
     vec3 specular = u_specularStrength * spec * u_lightColor;
 
-    vec3 result = (ambient + diffuse + specular) * u_objectColor;
+    vec3 result = (ambient + diffuse + specular) * baseColor;
     o_color = vec4(result, 1.0);
 }
