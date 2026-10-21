@@ -27,10 +27,15 @@ public:
     void swapBuffers() const;
 
     int getKey(int key);
+    int getMouseButton(int button) const;
+    void getCursorPos(double* xpos, double* ypos) const;
+    void setCursorPos(double xpos, double ypos);
     void setInputMode(int mode, int value);
     void setKeyCallback(GLFWkeyfun callback);
     void setScrollCallback(GLFWscrollfun callback);
     void setCursorPosCallback(GLFWcursorposfun callback);
+    void setMouseButtonCallback(GLFWmousebuttonfun callback);
+    void setWindowFocusCallback(GLFWwindowfocusfun callback);
 
 private:
     GLFWwindow* m_glfwWindow;

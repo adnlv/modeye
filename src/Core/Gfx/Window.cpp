@@ -298,6 +298,21 @@ int Modeye::Gfx::Window::getKey(int key)
     return glfwGetKey(m_glfwWindow, key);
 }
 
+int Modeye::Gfx::Window::getMouseButton(int button) const
+{
+    return glfwGetMouseButton(m_glfwWindow, button);
+}
+
+void Modeye::Gfx::Window::getCursorPos(double* xpos, double* ypos) const
+{
+    glfwGetCursorPos(m_glfwWindow, xpos, ypos);
+}
+
+void Modeye::Gfx::Window::setCursorPos(double xpos, double ypos)
+{
+    glfwSetCursorPos(m_glfwWindow, xpos, ypos);
+}
+
 void Modeye::Gfx::Window::setInputMode(int mode, int value)
 {
     glfwSetInputMode(m_glfwWindow, mode, value);
@@ -316,4 +331,14 @@ void Modeye::Gfx::Window::setScrollCallback(GLFWscrollfun callback)
 void Modeye::Gfx::Window::setCursorPosCallback(GLFWcursorposfun callback)
 {
     glfwSetCursorPosCallback(m_glfwWindow, callback);
+}
+
+void Modeye::Gfx::Window::setMouseButtonCallback(GLFWmousebuttonfun callback)
+{
+    glfwSetMouseButtonCallback(m_glfwWindow, callback);
+}
+
+void Modeye::Gfx::Window::setWindowFocusCallback(GLFWwindowfocusfun callback)
+{
+    glfwSetWindowFocusCallback(m_glfwWindow, callback);
 }
