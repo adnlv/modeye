@@ -33,7 +33,7 @@ A modern, lightweight 3D graphics rendering engine and interactive sandbox built
 - **Interactive Dear ImGui Debug Layer**:
   - Real-time frame time graph and FPS counter.
   - Live model switcher, rotation controls, and lighting position/color dials.
-  - One-key toggle (`Tab`) between free-look camera flight and mouse cursor UI mode.
+  - Seamless navigation with visible cursor: click-and-drag viewport rotation with automatic cursor recapture.
 - **Cross-Platform Zero-Install Build**:
   - Automatically fetches and compiles all third-party dependencies (`GLFW`, `GLAD`, `GLM`, `spdlog`, `stb`, `tinyobjloader`, `imgui`) via CMake `FetchContent`.
 
@@ -71,11 +71,10 @@ flowchart TD
 
 | Key / Input | Action |
 | :--- | :--- |
+| `Hold LMB / RMB & Drag` | Look around viewport (Euler pitch and yaw, infinite rotation) |
 | `W` / `A` / `S` / `D` | Fly Forward / Left / Backward / Right |
 | `Space` / `C` | Ascend / Descend vertically |
-| `Mouse Movement` | Look around (Euler pitch and yaw) |
-| `Mouse Scroll` | Zoom in / out (Adjust Field of View) |
-| `Tab` | **Toggle between Camera Look and UI Cursor Mode** |
+| `Mouse Scroll` | Zoom in / out (Viewport FOV) / Scroll UI panels |
 | `R` | **Hot-reload Shaders** |
 | `Z` | Toggle Wireframe mode |
 | `Esc` | Exit application |
