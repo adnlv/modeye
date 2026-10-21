@@ -22,6 +22,8 @@ public:
 
     glm::mat4 getViewMat() const;
     glm::mat4 getProjectionMat(float aspect) const;
+    glm::vec3 position() const { return m_position; }
+    void setPosition(const glm::vec3& pos) { m_position = pos; }
 
     void processKeyboard(Direction direction, float deltaTime);
     void processMouseMovement(float xOffset, float yOffset);

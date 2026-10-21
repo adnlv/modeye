@@ -38,6 +38,21 @@ void Modeye::Gfx::Shader::setFloat(const std::string& name, float value) const
     glUniform1f(glGetUniformLocation(m_id, name.c_str()), value);
 }
 
+void Modeye::Gfx::Shader::setBool(const std::string& name, bool value) const
+{
+    glUniform1i(glGetUniformLocation(m_id, name.c_str()), static_cast<int>(value));
+}
+
+void Modeye::Gfx::Shader::setVec3(const std::string& name, const glm::vec3& value) const
+{
+    glUniform3fv(glGetUniformLocation(m_id, name.c_str()), 1, glm::value_ptr(value));
+}
+
+void Modeye::Gfx::Shader::setMat3(const std::string& name, const glm::mat3& value) const
+{
+    glUniformMatrix3fv(glGetUniformLocation(m_id, name.c_str()), 1, false, glm::value_ptr(value));
+}
+
 void Modeye::Gfx::Shader::setMat4(const std::string& name, const glm::mat4& value) const
 {
     glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, false, glm::value_ptr(value));

@@ -147,7 +147,12 @@ int main(int argc, char** argv)
 
     auto vertices = loadObj("assets/monkey.obj");
     auto monkeyMesh = Modeye::Gfx::Mesh(vertices);
-    auto shader = Modeye::Gfx::Shader("triangle.vert", "triangle.frag");
+    auto shader = Modeye::Gfx::Shader("mesh.vert", "mesh.frag");
+
+    glm::vec3 lightPos(2.0f, 4.0f, 3.0f);
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+    glm::vec3 objectColor(0.85f, 0.55f, 0.25f);
+    int renderMode = 0; // 0 = Blinn-Phong, 1 = Normals, 2 = Unlit
 
     while (!window.shouldClose()) {
         state.timer.startFrame();
@@ -183,10 +188,21 @@ int main(int argc, char** argv)
         shader.use();
 
         auto model = glm::mat4(1.0f);
+        glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
 
         shader.setMat4("u_projection", state.camera.getProjectionMat(window.aspectRatio()));
         shader.setMat4("u_view", state.camera.getViewMat());
         shader.setMat4("u_model", model);
+        shader.setMat3("u_normalMatrix", normalMatrix);
+
+        shader.setInt("u_renderMode", renderMode);
+        shader.setVec3("u_lightPos", lightPos);
+        shader.setVec3("u_lightColor", lightColor);
+        shader.setVec3("u_viewPos", state.camera.position());
+        shader.setVec3("u_objectColor", objectColor);
+        shader.setFloat("u_ambientStrength", 0.15f);
+        shader.setFloat("u_specularStrength", 0.6f);
+        shader.setFloat("u_shininess", 32.0f);
 
         monkeyMesh.draw(GL_TRIANGLES);
 
