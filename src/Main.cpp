@@ -25,7 +25,7 @@ struct AppState
     bool reload_shader_requested = false;
 
     // Render parameters
-    int current_model_idx = 0; // 0 = Monkey, 1 = Dragon
+    int current_model_idx = 0; // 0 = Monkey, 1 = Dragon, 2 = Retro TV
     int render_mode = 0;        // 0 = Blinn-Phong, 1 = Normal Visualizer, 2 = Unlit
     bool wireframe = false;
     bool auto_rotate = false;
@@ -40,6 +40,7 @@ struct AppState
     float shininess = 32.0f;
 
     bool use_texture = false;
+    bool use_material_colors = false;
 } state;
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
@@ -163,6 +164,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
     Modeye::Log::info("Loading 3D assets...");
     Modeye::Gfx::Model monkeyModel("assets/monkey.obj");
     Modeye::Gfx::Model dragonModel("assets/dragon.obj");
+    Modeye::Gfx::Model tvModel("assets/TV.obj");
 
     // Create default procedural texture
     auto checkerTexture = Modeye::Gfx::Texture::createCheckerboard(256, 16);
@@ -232,10 +234,22 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
             }
 
             if (ImGui::CollapsingHeader("Model & Geometry", ImGuiTreeNodeFlags_DefaultOpen)) {
-                const char* models[] = { "Suzanne (Blender Monkey)", "Stanford Dragon" };
-                ImGui::Combo("Select Model", &state.current_model_idx, models, IM_ARRAYSIZE(models));
+                const char* models[] = { "Suzanne (Blender Monkey)", "Stanford Dragon", "Retro TV" };
+                int previous_model_idx = state.current_model_idx;
+                if (ImGui::Combo("Select Model", &state.current_model_idx, models, IM_ARRAYSIZE(models))) {
+                    if (state.current_model_idx != previous_model_idx) {
+                        if (state.current_model_idx == 2) {
+                            state.use_material_colors = true;
+                            state.object_color = glm::vec3(1.0f);
+                        } else {
+                            state.use_material_colors = false;
+                            state.object_color = glm::vec3(0.85f, 0.55f, 0.25f);
+                        }
+                    }
+                }
 
-                const Modeye::Gfx::Model& activeModel = (state.current_model_idx == 0) ? monkeyModel : dragonModel;
+                const Modeye::Gfx::Model& activeModel = (state.current_model_idx == 0) ? monkeyModel :
+                                                        (state.current_model_idx == 1) ? dragonModel : tvModel;
                 ImGui::Text("Vertices: %zu | Triangles: %zu", activeModel.vertexCount(), activeModel.indexCount() / 3);
 
                 ImGui::Checkbox("Wireframe Mode (Z)", &state.wireframe);
@@ -248,7 +262,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
                 ImGui::Combo("Render Mode", &state.render_mode, modes, IM_ARRAYSIZE(modes));
 
                 ImGui::Checkbox("Use Checkerboard Texture", &state.use_texture);
-                ImGui::ColorEdit3("Object Color", &state.object_color.x);
+                ImGui::Checkbox("Use Material Colors (.mtl)", &state.use_material_colors);
+                ImGui::ColorEdit3("Object Color / Tint", &state.object_color.x);
                 ImGui::SliderFloat("Ambient", &state.ambient_strength, 0.0f, 1.0f);
                 ImGui::SliderFloat("Specular", &state.specular_strength, 0.0f, 2.0f);
                 ImGui::SliderFloat("Shininess", &state.shininess, 2.0f, 128.0f);
@@ -283,9 +298,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
         auto model = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians(state.rotation_angle), glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // Adjust dragon scale if dragon is selected (since Stanford dragon has different dimensions)
         if (state.current_model_idx == 1) {
+            // Stanford dragon has different dimensions
             model = glm::scale(model, glm::vec3(0.8f));
+        } else if (state.current_model_idx == 2) {
+            // Retro TV: orient to face front camera and center at origin
+            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::translate(model, -tvModel.center());
         }
 
         glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
@@ -304,6 +323,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
         shader.setFloat("u_specularStrength", state.specular_strength);
         shader.setFloat("u_shininess", state.shininess);
 
+        shader.setBool("u_useMaterialColors", state.use_material_colors);
         shader.setBool("u_useTexture", state.use_texture);
         if (state.use_texture) {
             checkerTexture.bind(0);
@@ -312,8 +332,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
 
         if (state.current_model_idx == 0) {
             monkeyModel.draw(GL_TRIANGLES);
-        } else {
+        } else if (state.current_model_idx == 1) {
             dragonModel.draw(GL_TRIANGLES);
+        } else {
+            tvModel.draw(GL_TRIANGLES);
         }
 
         // Render ImGui over OpenGL content
