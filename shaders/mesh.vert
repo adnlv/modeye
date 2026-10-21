@@ -3,6 +3,7 @@
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec2 a_uv;
+layout (location = 3) in vec3 a_color;
 
 uniform mat4 u_projection;
 uniform mat4 u_view;
@@ -12,6 +13,7 @@ uniform mat3 u_normalMatrix;
 out vec3 v_fragPos;
 out vec3 v_normal;
 out vec2 v_uv;
+out vec3 v_color;
 
 void main()
 {
@@ -19,6 +21,7 @@ void main()
     v_fragPos = worldPos.xyz;
     v_normal = normalize(u_normalMatrix * a_normal);
     v_uv = a_uv;
+    v_color = a_color;
 
     gl_Position = u_projection * u_view * worldPos;
 }

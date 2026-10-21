@@ -3,6 +3,7 @@
 in vec3 v_fragPos;
 in vec3 v_normal;
 in vec2 v_uv;
+in vec3 v_color;
 
 out vec4 o_color;
 
@@ -21,9 +22,10 @@ uniform float u_ambientStrength;
 uniform float u_specularStrength;
 uniform float u_shininess;
 
-// Texture uniforms
+// Texture and material uniforms
 uniform sampler2D u_diffuseMap;
 uniform bool u_useTexture;
+uniform bool u_useMaterialColors;
 
 void main()
 {
@@ -37,6 +39,9 @@ void main()
     }
 
     vec3 baseColor = u_objectColor;
+    if (u_useMaterialColors) {
+        baseColor *= v_color;
+    }
     if (u_useTexture) {
         baseColor *= texture(u_diffuseMap, v_uv).rgb;
     }
