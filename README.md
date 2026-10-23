@@ -3,7 +3,7 @@
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?logo=c%2B%2B&logoColor=white)](https://en.wikipedia.org/wiki/C%2B%2B17)
 [![OpenGL 4.6 Core](https://img.shields.io/badge/OpenGL-4.6%20Core-5586A4?logo=opengl&logoColor=white)](https://www.khronos.org/opengl/)
 [![CMake 3.28+](https://img.shields.io/badge/CMake-3.28%2B-064F8C?logo=cmake&logoColor=white)](https://cmake.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-lightgrey)](CMakePresets.json)
 
 A modern, lightweight 3D graphics rendering engine and interactive sandbox built with **C++17** and **OpenGL 4.6 Core Profile**. Modeye is designed to provide clean, RAII-driven abstractions over the raw OpenGL state machine, featuring indexed rendering, Blinn-Phong lighting, runtime shader hot-reloading, robust OBJ asset loading, and a real-time debug interface powered by Dear ImGui.
@@ -159,4 +159,4 @@ modeye/
 
 ## License
 
-This project is licensed under the MIT License - see [LICENSE.txt](LICENSE.txt) for details.
+This project is licensed under the GNU General Public License v3.0 - see [LICENSE.txt](LICENSE.txt) for details.
