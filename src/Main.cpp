@@ -201,7 +201,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
         // Live shader hot-reload
         if (state.reload_shader_requested) {
             state.reload_shader_requested = false;
-            shader.reload();
+            if (!shader.reload()) {
+                Modeye::Log::warn("Shader reload failed; continuing with previous shader program");
+            }
         }
 
         if (state.auto_rotate) {

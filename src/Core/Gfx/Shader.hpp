@@ -24,7 +24,7 @@ public:
     void setMat3(const std::string& name, const glm::mat3& value) const;
     void setMat4(const std::string& name, const glm::mat4& value) const;
 
-    void reload();
+    bool reload();
 
 private:
     GLuint m_id = 0;

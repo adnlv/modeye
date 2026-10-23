@@ -57,7 +57,10 @@ Modeye::Gfx::Shader::Shader(const std::string& vertShader_path, const std::strin
     m_vertShaderFsPath = dir / vertShader_path;
     m_fragShaderFsPath = dir / fragShaderPath;
 
-    reload();
+    if (!reload()) {
+        Modeye::Log::error("Initial shader compilation failed: '{}' and '{}'", m_vertShaderFsPath.string(), m_fragShaderFsPath.string());
+        std::abort();
+    }
 }
 
 Modeye::Gfx::Shader::~Shader()
@@ -105,7 +108,7 @@ void Modeye::Gfx::Shader::setMat4(const std::string& name, const glm::mat4& valu
     glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, false, glm::value_ptr(value));
 }
 
-void Modeye::Gfx::Shader::reload()
+bool Modeye::Gfx::Shader::reload()
 {
     std::string vertShaderSrc;
     std::string fragShaderSrc;
@@ -133,7 +136,7 @@ void Modeye::Gfx::Shader::reload()
         fragShaderSrc = fragShaderStream.str();
     } catch (const std::exception& e) {
         Modeye::Log::error("Failed to open shader file: {}", e.what());
-        std::abort();
+        return false;
     }
 
     const char* vertShaderSrcCStr = vertShaderSrc.c_str();
@@ -146,8 +149,9 @@ void Modeye::Gfx::Shader::reload()
     if (!success) {
         std::string infoLog = getShaderInfoLog(vertShader);
         Modeye::Log::error("Vertex shader compilation failed: {}", infoLog);
-        std::abort();
-    };
+        glDeleteShader(vertShader);
+        return false;
+    }
 
     const char* fragShaderSrcCStr = fragShaderSrc.c_str();
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -158,8 +162,10 @@ void Modeye::Gfx::Shader::reload()
     if (!success) {
         std::string infoLog = getShaderInfoLog(fragShader);
         Modeye::Log::error("Fragment shader compilation failed: {}", infoLog);
-        std::abort();
-    };
+        glDeleteShader(vertShader);
+        glDeleteShader(fragShader);
+        return false;
+    }
 
     GLuint program = glCreateProgram();
     glAttachShader(program, vertShader);
@@ -170,7 +176,12 @@ void Modeye::Gfx::Shader::reload()
     if (!success) {
         std::string infoLog = getProgramInfoLog(program);
         Modeye::Log::error("Shader program linkage failed: {}", infoLog);
-        std::abort();
+        glDetachShader(program, vertShader);
+        glDetachShader(program, fragShader);
+        glDeleteShader(vertShader);
+        glDeleteShader(fragShader);
+        glDeleteProgram(program);
+        return false;
     }
 
     glDetachShader(program, vertShader);
@@ -188,4 +199,5 @@ void Modeye::Gfx::Shader::reload()
     Modeye::Log::info("Shaders compiled and linked successfully:");
     Modeye::Log::info("  Vertex shader path: '{}'", m_vertShaderFsPath.string());
     Modeye::Log::info("  Fragment shader path: '{}'", m_fragShaderFsPath.string());
+    return true;
 }
