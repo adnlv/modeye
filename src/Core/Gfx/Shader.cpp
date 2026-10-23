@@ -4,6 +4,53 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 
+namespace
+{
+
+std::string getShaderInfoLog(GLuint shader)
+{
+    GLint logLength = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+    if (logLength <= 0) {
+        return {};
+    }
+
+    std::string infoLog(logLength, '\0');
+    GLsizei written = 0;
+    glGetShaderInfoLog(shader, logLength, &written, infoLog.data());
+    if (written >= 0 && written < logLength) {
+        infoLog.resize(written);
+    }
+
+    while (!infoLog.empty() && (infoLog.back() == '\0' || infoLog.back() == '\n' || infoLog.back() == '\r')) {
+        infoLog.pop_back();
+    }
+    return infoLog;
+}
+
+std::string getProgramInfoLog(GLuint program)
+{
+    GLint logLength = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
+    if (logLength <= 0) {
+        return {};
+    }
+
+    std::string infoLog(logLength, '\0');
+    GLsizei written = 0;
+    glGetProgramInfoLog(program, logLength, &written, infoLog.data());
+    if (written >= 0 && written < logLength) {
+        infoLog.resize(written);
+    }
+
+    while (!infoLog.empty() && (infoLog.back() == '\0' || infoLog.back() == '\n' || infoLog.back() == '\r')) {
+        infoLog.pop_back();
+    }
+    return infoLog;
+}
+
+} // namespace
+
 Modeye::Gfx::Shader::Shader(const std::string& vertShader_path, const std::string& fragShaderPath)
 {
     std::filesystem::path dir("shaders");
@@ -95,10 +142,9 @@ void Modeye::Gfx::Shader::reload()
     glCompileShader(vertShader);
 
     int success;
-    char infoLog[512];
     glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(vertShader, sizeof(infoLog), nullptr, infoLog);
+        std::string infoLog = getShaderInfoLog(vertShader);
         Modeye::Log::error("Vertex shader compilation failed: {}", infoLog);
         std::abort();
     };
@@ -110,7 +156,7 @@ void Modeye::Gfx::Shader::reload()
 
     glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        glGetShaderInfoLog(fragShader, sizeof(infoLog), nullptr, infoLog);
+        std::string infoLog = getShaderInfoLog(fragShader);
         Modeye::Log::error("Fragment shader compilation failed: {}", infoLog);
         std::abort();
     };
@@ -122,7 +168,7 @@ void Modeye::Gfx::Shader::reload()
 
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
-        glGetProgramInfoLog(program, sizeof(infoLog), nullptr, infoLog);
+        std::string infoLog = getProgramInfoLog(program);
         Modeye::Log::error("Shader program linkage failed: {}", infoLog);
         std::abort();
     }
